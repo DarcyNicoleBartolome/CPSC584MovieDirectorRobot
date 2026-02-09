@@ -12,29 +12,29 @@ def main():
 
     while True:
        
-        crawler.do_action('forward',5,speed)
+        crawler.do_action('forward',10,speed)
         sleep(0.05)
         
         crawler.do_action('turn left',2,speed)
-        crawler.do_action('turn left',2,speed)
+      #   crawler.do_action('turn left',2,speed)
         sleep(0.05)
-        crawler.do_action('forward',5,speed)
-        sleep(0.05)
-        
-        crawler.do_action('turn left',2,speed)
-        crawler.do_action('turn left',2,speed)
-        sleep(0.05)
-        crawler.do_action('forward',5,speed)
+        crawler.do_action('forward',10,speed)
         sleep(0.05)
         
         crawler.do_action('turn left',2,speed)
-        crawler.do_action('turn left',2,speed)
+      #   crawler.do_action('turn left',2,speed)
         sleep(0.05)
-        crawler.do_action('forward',5,speed)
+        crawler.do_action('forward',10,speed)
         sleep(0.05)
         
         crawler.do_action('turn left',2,speed)
+      #   crawler.do_action('turn left',2,speed)
+        sleep(0.05)
+        crawler.do_action('forward',10,speed)
+        sleep(0.05)
+        
         crawler.do_action('turn left',2,speed)
+      #   crawler.do_action('turn left',2,speed)
         
         print(f"stand step: {stand_step}")
         crawler.do_step(stand_step, speed)
