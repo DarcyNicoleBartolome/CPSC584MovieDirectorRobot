@@ -60,6 +60,31 @@ class MovieDirectorGUI(ctk.CTk):
         self.bottom = ctk.CTkFrame(self, corner_radius=16)
         self.bottom.grid(row=1, column=0, columnspan=3, padx=18, pady=(10, 18), sticky="ew")
 
+        # ---- Navigation (D-pad) ----
+        self.dpad = ctk.CTkFrame(self.bottom, corner_radius=16)
+        self.dpad.grid(row=0, column=0, padx=12, pady=12, sticky="w")
+
+        for r in range(3):
+            self.dpad.grid_rowconfigure(r, weight=1)
+        for c in range(3):
+            self.dpad.grid_columnconfigure(c, weight=1)
+
+        def dpad_btn(text, action, r, c):
+            ctk.CTkButton(
+                self.dpad,
+                text=text,
+                width=44,
+                height=44,
+                corner_radius=14,
+                command=lambda a=action: self.on_move(a),
+            ).grid(row=r, column=c, padx=6, pady=6, sticky="nsew")
+
+        dpad_btn("▲", "up", 0, 1)
+        dpad_btn("◀", "left", 1, 0)
+        dpad_btn("●", "stop", 1, 1)
+        dpad_btn("▶", "right", 1, 2)
+        dpad_btn("▼", "down", 2, 1)
+
         # ---- OpenCV stream state ----
         self._stop = threading.Event()
         self._latest_frame_rgb = None
