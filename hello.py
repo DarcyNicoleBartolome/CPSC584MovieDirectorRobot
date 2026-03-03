@@ -44,5 +44,9 @@ def main():
         crawler.do_step(new_step,speed)
         sleep(3)
 
+
+
+        
+
 if __name__ == "__main__":
     main()
