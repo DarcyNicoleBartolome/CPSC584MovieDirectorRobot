@@ -24,42 +24,66 @@ def move_sideLeft(speed):
    crawler.do_step('stand', speed)
    ## [right front],[left front],[left rear],[right rear]
    
-   stand = [
-        [[45, 45, -50], [45, 0, -50], [45, 0, -50], [45, 45, -50]],
-    ]
+   LENGTH_SIDE = 77
+   X_DEFAULT = 45
+   X_TURN = 70
+   X_START = 0
+   Y_DEFAULT = 45
+   Y_TURN = 130
+   Y_WAVE =120
+   Y_START = 0 
+   Z_DEFAULT = -50
+   Z_UP = -30
+   Z_WAVE = 60
+   Z_TURN = -40
+   Z_PUSH = -76
    
-   look_left = [
-      #   [[45, 0, -50], [45, 45, -50], [45, 45, -50], [45, 0, -50]],
-      #   [[0, 45, -50], [45, 45, -50], [45, 45, -50], [45, 0, -50]],
-      #   [[0, 45, -50], [45, 45, -35], [45, 45, -50], [45, 0, -50]],
-      # Right front move to set
-      [[45, 45, 75], [45, 0, -75], [45, 0, -75], [45, 45, -75]],
-      [[0, 45, 75], [45, 0, -75], [0, 45, -75], [45, 0, -75]],
-      [[0, 45, -75], [45, 0, -75], [0, 45, -75], [45, 0, -75]],
+   crawler.stand_position = crawler.stand_position + 1 & 1
+   
+   # forward(self):
+   forward =  [
+      [[X_DEFAULT, Y_DEFAULT, picrawler.z_current],[X_TURN, Y_START,Z_UP],[X_DEFAULT, Y_START, picrawler.z_current],[X_DEFAULT, Y_DEFAULT, picrawler.z_current]],
+      [[X_DEFAULT, Y_DEFAULT, picrawler.z_current],[X_DEFAULT, Y_DEFAULT*2,Z_UP],[X_DEFAULT, Y_START, picrawler.z_current],[X_DEFAULT, Y_DEFAULT, picrawler.z_current]],
+      [[X_DEFAULT, Y_DEFAULT, picrawler.z_current],[X_DEFAULT, Y_DEFAULT*2,picrawler.z_current],[X_DEFAULT, Y_START, picrawler.z_current],[X_DEFAULT, Y_DEFAULT, picrawler.z_current]],
+      [[X_DEFAULT, Y_START, picrawler.z_current],[X_DEFAULT, Y_DEFAULT,picrawler.z_current],[X_DEFAULT, Y_DEFAULT, picrawler.z_current],[X_DEFAULT, Y_DEFAULT*2, picrawler.z_current]],
       
-      # Left front move to set
-      [[0, 45, -75], [45, 0, 75], [0, 45, -75], [45, 0, -75]],
-      [[0, 45, -75], [0, 45, 75], [0, 45, -75], [45, 0, -75]],
-      [[0, 45, -75], [0, 45, -75], [0, 45, -75], [45, 0, -75]],
+      [[X_DEFAULT, Y_START, picrawler.z_current],[X_DEFAULT, Y_DEFAULT,picrawler.z_current],[X_DEFAULT, Y_DEFAULT, picrawler.z_current],[X_DEFAULT, Y_DEFAULT*2, Z_UP]],
+      [[X_DEFAULT, Y_START, picrawler.z_current],[X_DEFAULT, Y_DEFAULT,picrawler.z_current],[X_DEFAULT, Y_DEFAULT, picrawler.z_current],[X_TURN, Y_START, Z_UP]],
+      [[X_DEFAULT, Y_START, picrawler.z_current],[X_DEFAULT, Y_DEFAULT,picrawler.z_current],[X_DEFAULT, Y_DEFAULT, picrawler.z_current],[X_DEFAULT, Y_START, picrawler.z_current]],
+   ]
+   
+   
+   # stand = [
+   #      [[45, 45, -50], [45, 0, -50], [45, 0, -50], [45, 45, -50]],
+   #  ]
+   
+   # look_left = [
+   #    # Right front move to set
+   #    [[45, 45, 75], [45, 0, -50], [45, 0, -50], [45, 45, -50]],
+   #    [[0, 45, 75], [45, 0, -50], [0, 45, -50], [45, 0, -50]],
+   #    [[0, 45, -50], [45, 0, -50], [0, 45, -50], [45, 0, -50]],
       
-      # Left back move to set
-      [[0, 45, -75], [0, 45, -75], [0, 45, 75], [45, 0, -75]],
-      [[0, 45, -75], [0, 45, -75], [45, 45, 75], [45, 0, -75]],
-      [[0, 45, -75], [0, 45, -75], [45, 45, -75], [45, 0, -75]],
+   #    # Left front move to set
+   #    [[0, 45, -75], [45, 0, 75], [0, 45, -75], [45, 0, -75]],
+   #    [[0, 45, -75], [0, 45, 75], [0, 45, -75], [45, 0, -75]],
+   #    [[0, 45, -75], [0, 45, -75], [0, 45, -75], [45, 0, -75]],
       
-      # right back move to set
-      [[0, 45, -75], [0, 45, -75], [45, 45, -75], [45, 0, 75]],
-      [[0, 45, -75], [0, 45, -75], [45, 45, -75], [0, 45, 75]],
-      [[0, 45, -75], [0, 45, -75], [45, 45, -75], [0, 45, -75]],
+   #    # Left back move to set
+   #    [[0, 45, -75], [0, 45, -75], [0, 45, 75], [45, 0, -75]],
+   #    [[0, 45, -75], [0, 45, -75], [45, 45, 75], [45, 0, -75]],
+   #    [[0, 45, -75], [0, 45, -75], [45, 45, -75], [45, 0, -75]],
       
-      
-      # [[0, 45, -50], [45, 0, -50], [0, 45, -50], [45, 0, -50]],
-      # [[45, 0, -50], [0, 45, -50], [45, 0, -50], [0, 45, -50]],
-    ]
+   #    # right back move to set
+   #    [[0, 45, -75], [0, 45, -75], [45, 45, -75], [45, 0, 75]],
+   #    [[0, 45, -75], [0, 45, -75], [45, 45, -75], [0, 45, 75]],
+   #    [[0, 45, -75], [0, 45, -75], [45, 45, -75], [0, 45, -75]],
+   
+   #  ]
 
-   for coord in stand:
-      crawler.do_step(coord, speed)
-   for coord in look_left:
+   # for coord in stand:
+   #    crawler.do_step(coord, speed)
+   
+   for coord in forward:
       crawler.do_step(coord, speed)
    
 def move_sideRight(speed):
