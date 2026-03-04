@@ -17,6 +17,7 @@ class MovieDirectorGUI(ctk.CTk):
         self.minsize(850, 560)
 
         self.stream_url = "http://172.17.10.218:8080/stream.mjpg"
+        project_dir = os.path.dirname(os.path.abspath(__file__))
 
         # Layout
         self.grid_rowconfigure(0, weight=1)
@@ -28,11 +29,40 @@ class MovieDirectorGUI(ctk.CTk):
         # Left
         self.left = ctk.CTkFrame(self, corner_radius=16)
         self.left.grid(row=0, column=0, padx=(18, 10), pady=(18, 10), sticky="ns")
-        for i in range(3):
-            ctk.CTkButton(
-                self.left, text="", width=52, height=52, corner_radius=14,
-                command=lambda idx=i: self.on_left_action(idx),
-            ).grid(row=i, column=0, padx=12, pady=(12 if i == 0 else 10, 0))
+        
+        # Left side icons: camera, focus, zoom
+        left_icons = ["camera.png", "focus.png", "zoom.png"]
+        left_photos = []
+        
+        for i, icon in enumerate(left_icons):
+            try:
+                icon_path = os.path.join(project_dir, icon)
+                icon_img = Image.open(icon_path)
+                icon_img = icon_img.resize((40, 40), Image.Resampling.LANCZOS)
+                icon_photo = ImageTk.PhotoImage(icon_img)
+                left_photos.append(icon_photo)
+                
+                ctk.CTkButton(
+                    self.left, 
+                    image=icon_photo,
+                    text="",
+                    width=52, 
+                    height=52, 
+                    corner_radius=14,
+                    command=lambda idx=i: self.on_left_action(idx),
+                ).grid(row=i, column=0, padx=12, pady=(12 if i == 0 else 10, 0))
+            except Exception as e:
+                print(f"Error loading {icon}: {e}")
+                ctk.CTkButton(
+                    self.left, 
+                    text="",
+                    width=52, 
+                    height=52, 
+                    corner_radius=14,
+                    command=lambda idx=i: self.on_left_action(idx),
+                ).grid(row=i, column=0, padx=12, pady=(12 if i == 0 else 10, 0))
+        
+        self.left_photos = left_photos  # Keep references
 
         # Right
         self.right = ctk.CTkFrame(self, corner_radius=16)
@@ -64,8 +94,6 @@ class MovieDirectorGUI(ctk.CTk):
         # ---- Navigation (D-pad) ----
         self.dpad = ctk.CTkFrame(self.bottom, corner_radius=16)
         self.dpad.grid(row=0, column=0, padx=12, pady=12, sticky="w")
-
-        project_dir = os.path.dirname(os.path.abspath(__file__))
 
         for r in range(3):
             self.dpad.grid_rowconfigure(r, weight=1)
