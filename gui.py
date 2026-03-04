@@ -67,11 +67,40 @@ class MovieDirectorGUI(ctk.CTk):
         # Right
         self.right = ctk.CTkFrame(self, corner_radius=16)
         self.right.grid(row=0, column=2, padx=(10, 18), pady=(18, 10), sticky="ns")
-        for i in range(3):
-            ctk.CTkButton(
-                self.right, text="", width=52, height=52, corner_radius=14,
-                command=lambda idx=i: self.on_right_action(idx),
-            ).grid(row=i, column=0, padx=12, pady=(12 if i == 0 else 10, 0))
+        
+        # Right side icons: goldenratio, and others to be added
+        right_icons = ["icons/goldenratio.png", "icons/icon2.png", "icons/icon3.png"]
+        right_photos = []
+        
+        for i, icon in enumerate(right_icons):
+            try:
+                icon_path = os.path.join(project_dir, icon)
+                icon_img = Image.open(icon_path)
+                icon_img = icon_img.resize((40, 40), Image.Resampling.LANCZOS)
+                icon_photo = ImageTk.PhotoImage(icon_img)
+                right_photos.append(icon_photo)
+                
+                ctk.CTkButton(
+                    self.right, 
+                    image=icon_photo,
+                    text="",
+                    width=52, 
+                    height=52, 
+                    corner_radius=14,
+                    command=lambda idx=i: self.on_right_action(idx),
+                ).grid(row=i, column=0, padx=12, pady=(12 if i == 0 else 10, 0))
+            except Exception as e:
+                print(f"Error loading {icon}: {e}")
+                ctk.CTkButton(
+                    self.right, 
+                    text="",
+                    width=52, 
+                    height=52, 
+                    corner_radius=14,
+                    command=lambda idx=i: self.on_right_action(idx),
+                ).grid(row=i, column=0, padx=12, pady=(12 if i == 0 else 10, 0))
+        
+        self.right_photos = right_photos  # Keep references
 
         # Center preview
         self.center = ctk.CTkFrame(self, corner_radius=18)
