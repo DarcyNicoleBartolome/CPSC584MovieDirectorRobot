@@ -3,6 +3,7 @@ import cv2
 from PIL import Image, ImageTk
 import threading
 import time
+import os
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
@@ -84,6 +85,122 @@ class MovieDirectorGUI(ctk.CTk):
         dpad_btn("●", "stop", 1, 1)
         dpad_btn("▶", "right", 1, 2)
         dpad_btn("▼", "down", 2, 1)
+
+        # ---- Record Controls (middle) ----
+        self.controls = ctk.CTkFrame(self.bottom, corner_radius=16)
+        self.controls.grid(row=0, column=1, padx=12, pady=12, sticky="ew")
+
+        # Record button (red)
+        ctk.CTkButton(
+            self.controls,
+            text="●",
+            width=52,
+            height=52,
+            corner_radius=14,
+            fg_color="#CC0000",
+            text_color="white",
+        ).pack(side="left", padx=6)
+
+        # Pause button
+        ctk.CTkButton(
+            self.controls,
+            text="⏸",
+            width=52,
+            height=52,
+            corner_radius=14,
+        ).pack(side="left", padx=6)
+
+        # Stop button
+        ctk.CTkButton(
+            self.controls,
+            text="■",
+            width=52,
+            height=52,
+            corner_radius=14,
+        ).pack(side="left", padx=6)
+
+        # ---- Gallery, Speaker, Settings (right) ----
+        self.utility = ctk.CTkFrame(self.bottom, corner_radius=16)
+        self.utility.grid(row=0, column=2, padx=12, pady=12, sticky="e")
+
+        # Gallery button with image
+        try:
+            project_dir = os.path.dirname(os.path.abspath(__file__))
+            gallery_path = os.path.join(project_dir, "gallery.png")
+            gallery_img = Image.open(gallery_path)
+            gallery_img = gallery_img.resize((40, 40), Image.Resampling.LANCZOS)
+            gallery_photo = ImageTk.PhotoImage(gallery_img)
+            self.gallery_photo = gallery_photo  # Keep a reference
+            
+            ctk.CTkButton(
+                self.utility,
+                image=gallery_photo,
+                text="",
+                width=45,
+                height=45,
+                corner_radius=14,
+            ).pack(side="left", padx=6)
+        except Exception as e:
+            print(f"Error loading gallery image: {e}")
+            ctk.CTkButton(
+                self.utility,
+                text="🖼",
+                width=52,
+                height=52,
+                corner_radius=14,
+            ).pack(side="left", padx=6)
+
+        # Speaker button with image
+        try:
+            speaker_path = os.path.join(project_dir, "speaker.png")
+            speaker_img = Image.open(speaker_path)
+            speaker_img = speaker_img.resize((40, 40), Image.Resampling.LANCZOS)
+            speaker_photo = ImageTk.PhotoImage(speaker_img)
+            self.speaker_photo = speaker_photo  # Keep a reference
+            
+            ctk.CTkButton(
+                self.utility,
+                image=speaker_photo,
+                text="",
+                width=45,
+                height=45,
+                corner_radius=14,
+            ).pack(side="left", padx=6)
+        except Exception as e:
+            print(f"Error loading speaker image: {e}")
+            ctk.CTkButton(
+                self.utility,
+                text="🔊",
+                width=52,
+                height=52,
+                corner_radius=14,
+            ).pack(side="left", padx=6)
+
+        # Settings button with image
+        try:
+            settings_path = os.path.join(project_dir, "settings.png")
+            settings_img = Image.open(settings_path)
+            settings_img = settings_img.resize((40, 40), Image.Resampling.LANCZOS)
+            settings_photo = ImageTk.PhotoImage(settings_img)
+            self.settings_photo = settings_photo  # Keep a reference
+            
+            ctk.CTkButton(
+                self.utility,
+                image=settings_photo,
+                text="",
+                width=45,
+                height=45,
+                corner_radius=14,
+            ).pack(side="left", padx=6)
+        except Exception as e:
+            print(f"Error loading settings image: {e}")
+            ctk.CTkButton(
+                self.utility,
+                text="⚙",
+                width=52,
+                height=52,
+                corner_radius=14,
+            ).pack(side="left", padx=6)
 
         # ---- OpenCV stream state ----
         self._stop = threading.Event()
