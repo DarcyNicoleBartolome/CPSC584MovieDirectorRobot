@@ -85,6 +85,8 @@ def move_sideLeft(speed):
    
    for coord in forward:
       crawler.do_step(coord, speed)
+      print(coord)
+      sleep(3)
    
 def move_sideRight(speed):
    crawler.do_step('stand', speed)
