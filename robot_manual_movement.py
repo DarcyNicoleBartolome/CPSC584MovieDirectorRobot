@@ -6,10 +6,10 @@ crawler = Picrawler()
 speed = 90
 
 LENGTH_SIDE = 77
-X_DEFAULT = 45
+X_DEFAULT = 35
 X_TURN = 70
 X_START = 0
-Y_DEFAULT = 45
+Y_DEFAULT = 35
 Y_TURN = 130
 Y_WAVE =120
 Y_START = 0 
