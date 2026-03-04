@@ -57,7 +57,7 @@ def move_sideLeft(speed, current):
    left =  [
       ## [right front],[left front],[left rear],[right rear]
       # [[X_DEFAULT, Y_DEFAULT, current[0][2]],[X_START, Y_TURN,Z_UP],[X_DEFAULT, Y_START, current[2][2]],[X_DEFAULT, Y_DEFAULT, current[3][2]]],
-      [[X_DEFAULT, Y_DEFAULT, current[0][2]],[X_DEFAULT, Y_DEFAULT, current[1][2]],[X_START, Y_TURN,Z_UP],[X_DEFAULT, Y_START, current[3][2]]],
+      [[X_DEFAULT, Y_DEFAULT, current[0][2]],[X_DEFAULT, Y_DEFAULT, current[1][2]],[X_START, -Y_TURN,Z_UP],[X_DEFAULT, Y_START, current[3][2]]],
       
       # [[X_DEFAULT, Y_DEFAULT, current[0][2]],[X_DEFAULT, Y_DEFAULT*2,Z_UP],[X_DEFAULT, Y_START, current[2][2]],[X_DEFAULT, Y_DEFAULT, current[3][2]]],
       [[X_DEFAULT, Y_DEFAULT, current[0][2]],[X_DEFAULT, Y_DEFAULT, current[1][2]],[X_DEFAULT, Y_DEFAULT*2,Z_UP],[X_DEFAULT, Y_START, current[3][2]]],
@@ -78,35 +78,13 @@ def move_sideLeft(speed, current):
       [[X_DEFAULT, Y_START, current[0][2]],[X_DEFAULT, Y_START, current[1][2]],[X_DEFAULT, Y_DEFAULT, current[2][2]],[X_DEFAULT, Y_DEFAULT, current[3][2]]],
    ]
    
+   left_forward = [
+      [[X_DEFAULT, Y_DEFAULT, current[0][2]],[X_DEFAULT, Y_DEFAULT, current[1][2]],[X_START, Y_TURN,Z_UP],[X_DEFAULT, Y_START, current[3][2]]],
+      [[X_DEFAULT, Y_DEFAULT, current[0][2]],[X_DEFAULT, Y_DEFAULT, current[1][2]],[X_DEFAULT, Y_DEFAULT*3,Z_UP],[X_DEFAULT, Y_START, current[3][2]]],
+   ]
+   
    current = [[X_DEFAULT, Y_START, current[0][2]],[X_DEFAULT, Y_DEFAULT,current[1][2]],[X_DEFAULT, Y_DEFAULT, current[2][2]],[X_DEFAULT, Y_START, current[3][2]]]
    
-   
-   # stand = [
-   #      [[45, 45, -50], [45, 0, -50], [45, 0, -50], [45, 45, -50]],
-   #  ]
-   
-   # look_left = [
-   #    # Right front move to set
-   #    [[45, 45, 75], [45, 0, -50], [45, 0, -50], [45, 45, -50]],
-   #    [[0, 45, 75], [45, 0, -50], [0, 45, -50], [45, 0, -50]],
-   #    [[0, 45, -50], [45, 0, -50], [0, 45, -50], [45, 0, -50]],
-      
-   #    # Left front move to set
-   #    [[0, 45, -75], [45, 0, 75], [0, 45, -75], [45, 0, -75]],
-   #    [[0, 45, -75], [0, 45, 75], [0, 45, -75], [45, 0, -75]],
-   #    [[0, 45, -75], [0, 45, -75], [0, 45, -75], [45, 0, -75]],
-      
-   #    # Left back move to set
-   #    [[0, 45, -75], [0, 45, -75], [0, 45, 75], [45, 0, -75]],
-   #    [[0, 45, -75], [0, 45, -75], [45, 45, 75], [45, 0, -75]],
-   #    [[0, 45, -75], [0, 45, -75], [45, 45, -75], [45, 0, -75]],
-      
-   #    # right back move to set
-   #    [[0, 45, -75], [0, 45, -75], [45, 45, -75], [45, 0, 75]],
-   #    [[0, 45, -75], [0, 45, -75], [45, 45, -75], [0, 45, 75]],
-   #    [[0, 45, -75], [0, 45, -75], [45, 45, -75], [0, 45, -75]],
-   
-   #  ]
 
    # for coord in stand:
    #    crawler.do_step(coord, speed)
@@ -116,10 +94,13 @@ def move_sideLeft(speed, current):
    #    print(coord)
    #    sleep(3)
       
-   for coord in left:
+   for coord in left_forward:
+      crawler.do_step(coord, speed)
+      sleep(1)
+      crawler.do_step(coord, speed)
+      sleep(1)
       crawler.do_step(coord, speed)
       print(coord)
-      sleep(1)
    
 def move_sideRight(speed):
    crawler.do_step('stand', speed)
