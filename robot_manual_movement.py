@@ -135,6 +135,7 @@ def moveUp(speed, current):
    for coord in forward:
       crawler.do_step(coord, speed)
       sleep(1)
+      print(coord)
 
 def moveDown():
    pass
