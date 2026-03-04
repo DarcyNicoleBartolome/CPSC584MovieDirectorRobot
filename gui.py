@@ -31,7 +31,7 @@ class MovieDirectorGUI(ctk.CTk):
         self.left.grid(row=0, column=0, padx=(18, 10), pady=(18, 10), sticky="ns")
         
         # Left side icons: camera, focus, zoom
-        left_icons = ["icons/camera.png", "icons/focus.png", "icons/zoom.png"]
+        left_icons = ["icons/camera.png", "icons/focus.png", "icons/zoom.png", "icons/joystick.png"]
         left_photos = []
         
         for i, icon in enumerate(left_icons):
