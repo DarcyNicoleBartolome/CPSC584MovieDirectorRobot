@@ -35,7 +35,7 @@ def show_info():
 
 
 def move_sideLeft(speed, current):
-   crawler.do_step('stand', speed)
+   # crawler.do_step('stand', speed)
    ## [right front],[left front],[left rear],[right rear]
    
    
@@ -59,25 +59,25 @@ def move_sideLeft(speed, current):
    left =  [
       ## [right front],[left front],[left rear],[right rear]
       # [[X_DEFAULT, Y_DEFAULT, current[0][2]],[X_START, Y_TURN,Z_UP],[X_DEFAULT, Y_START, current[2][2]],[X_DEFAULT, Y_DEFAULT, current[3][2]]],
-      [[X_DEFAULT, Y_DEFAULT, current[0][2]],[X_DEFAULT, Y_DEFAULT, current[1][2]],[Y_START, X_TURN,Z_UP],[X_DEFAULT, Y_START, current[3][2]]],
+      [[Y_DEFAULT, X_DEFAULT, current[0][2]],[Y_DEFAULT, X_DEFAULT, current[1][2]],[Y_START, X_TURN, Z_UP],[Y_DEFAULT, X_START, current[3][2]]],
       
       # [[X_DEFAULT, Y_DEFAULT, current[0][2]],[X_DEFAULT, Y_DEFAULT*2,Z_UP],[X_DEFAULT, Y_START, current[2][2]],[X_DEFAULT, Y_DEFAULT, current[3][2]]],
-      [[X_DEFAULT, Y_DEFAULT, current[0][2]],[X_DEFAULT, Y_DEFAULT, current[1][2]],[X_DEFAULT*2, Y_DEFAULT,Z_UP],[Y_DEFAULT, X_START, current[3][2]]],
+      [[Y_DEFAULT, X_DEFAULT, current[0][2]],[Y_DEFAULT, X_DEFAULT, current[1][2]],[Y_DEFAULT*2, X_DEFAULT, Z_UP],[Y_DEFAULT, X_START, current[3][2]]],
       
       # [[X_DEFAULT, Y_DEFAULT, current[0][2]],[X_DEFAULT, Y_DEFAULT*2,current[1][2]],[X_DEFAULT, Y_START, current[2][2]],[X_DEFAULT, Y_DEFAULT, current[3][2]]],
-      [[X_DEFAULT, Y_DEFAULT, current[0][2]],[X_DEFAULT, Y_DEFAULT, current[1][2]],[X_DEFAULT*2, Y_DEFAULT,current[2][2]],[Y_DEFAULT, X_START, current[3][2]]],
+      [[Y_DEFAULT, X_DEFAULT, current[0][2]],[X_DEFAULT, Y_DEFAULT, current[1][2]],[X_DEFAULT*2, Y_DEFAULT,current[2][2]],[Y_DEFAULT, X_START, current[3][2]]],
       
       # [[X_DEFAULT, Y_START, current[0][2]],[X_DEFAULT, Y_DEFAULT,current[1][2]],[X_DEFAULT, Y_DEFAULT, current[2][2]],[X_DEFAULT, Y_DEFAULT*2, current[3][2]]],
-      [[X_DEFAULT*2, Y_DEFAULT, current[0][2]],[Y_DEFAULT, X_START, current[1][2]],[X_DEFAULT, Y_DEFAULT, current[2][2]],[X_DEFAULT, Y_DEFAULT, current[3][2]]],
+      [[Y_DEFAULT*2, X_DEFAULT, current[0][2]],[Y_DEFAULT, X_START, current[1][2]],[X_DEFAULT, Y_DEFAULT, current[2][2]],[X_DEFAULT, Y_DEFAULT, current[3][2]]],
       
       # [[X_DEFAULT, Y_START, current[0][2]],[X_DEFAULT, Y_DEFAULT,current[1][2]],[X_DEFAULT, Y_DEFAULT, current[2][2]],[X_DEFAULT, Y_DEFAULT*2, Z_UP]],
-      [[X_DEFAULT*2, Y_DEFAULT, Z_UP],[Y_DEFAULT, X_START, current[1][2]],[X_DEFAULT, Y_DEFAULT, current[2][2]],[X_DEFAULT, Y_DEFAULT, current[3][2]]],
+      [[Y_DEFAULT*2, X_DEFAULT, Z_UP],[Y_DEFAULT, X_START, current[1][2]],[Y_DEFAULT, X_DEFAULT, current[2][2]],[Y_DEFAULT, X_DEFAULT, current[3][2]]],
       
       # [[X_DEFAULT, Y_START, current[0][2]],[X_DEFAULT, Y_DEFAULT,current[1][2]],[X_DEFAULT, Y_DEFAULT, current[2][2]],[X_TURN, Y_START, Z_UP]],
-      [[Y_DEFAULT, X_START, Z_UP],[Y_DEFAULT, X_START, current[1][2]],[X_DEFAULT, Y_DEFAULT, current[2][2]],[X_DEFAULT, Y_DEFAULT, current[3][2]]],
+      [[Y_DEFAULT, X_START, Z_UP],[Y_DEFAULT, X_START, current[1][2]],[Y_DEFAULT, X_DEFAULT, current[2][2]],[X_DEFAULT, Y_DEFAULT, current[3][2]]],
       
       # [[X_DEFAULT, Y_START, current[0][2]],[X_DEFAULT, Y_DEFAULT,current[1][2]],[X_DEFAULT, Y_DEFAULT, current[2][2]],[X_DEFAULT, Y_START, current[3][2]]],
-      [[Y_DEFAULT, X_START, current[0][2]],[Y_DEFAULT, X_START, current[1][2]],[X_DEFAULT, Y_DEFAULT, current[2][2]],[X_DEFAULT, Y_DEFAULT, current[3][2]]],
+      [[Y_DEFAULT, X_START, current[0][2]],[Y_DEFAULT, X_START, current[1][2]],[Y_DEFAULT, X_DEFAULT, current[2][2]],[X_DEFAULT, Y_DEFAULT, current[3][2]]],
    ]
    
    # left_forward = [
@@ -188,6 +188,9 @@ def main():
               
            if 'w' == key: # move sideway right
               moveUp(speed, current_pose)
+              
+           if 'p' == key: # move sideway right
+              crawler.do_step('stand', speed)
             
 if __name__ == "__main__":
     main()
