@@ -31,7 +31,7 @@ class MovieDirectorGUI(ctk.CTk):
         self.left.grid(row=0, column=0, padx=(18, 10), pady=(18, 10), sticky="ns")
         
         # Left side icons: camera, focus, zoom
-        left_icons = ["camera.png", "focus.png", "zoom.png"]
+        left_icons = ["icons/camera.png", "icons/focus.png", "icons/zoom.png"]
         left_photos = []
         
         for i, icon in enumerate(left_icons):
@@ -122,7 +122,7 @@ class MovieDirectorGUI(ctk.CTk):
 
         # Record button (red) with image
         try:
-            record_path = os.path.join(project_dir, "record.png")
+            record_path = os.path.join(project_dir, "icons/record.png")
             record_img = Image.open(record_path)
             record_img = record_img.resize((40, 40), Image.Resampling.LANCZOS)
             record_photo = ImageTk.PhotoImage(record_img)
@@ -151,7 +151,7 @@ class MovieDirectorGUI(ctk.CTk):
 
         # Pause button with image
         try:
-            pause_path = os.path.join(project_dir, "pause.png")
+            pause_path = os.path.join(project_dir, "icons/pause.png")
             pause_img = Image.open(pause_path)
             pause_img = pause_img.resize((40, 40), Image.Resampling.LANCZOS)
             pause_photo = ImageTk.PhotoImage(pause_img)
@@ -177,7 +177,7 @@ class MovieDirectorGUI(ctk.CTk):
 
         # Stop button with image
         try:
-            stop_path = os.path.join(project_dir, "stop.png")
+            stop_path = os.path.join(project_dir, "icons/stop.png")
             stop_img = Image.open(stop_path)
             stop_img = stop_img.resize((40, 40), Image.Resampling.LANCZOS)
             stop_photo = ImageTk.PhotoImage(stop_img)
@@ -207,7 +207,7 @@ class MovieDirectorGUI(ctk.CTk):
 
         # Gallery button with image
         try:
-            gallery_path = os.path.join(project_dir, "gallery.png")
+            gallery_path = os.path.join(project_dir, "icons/gallery.png")
             gallery_img = Image.open(gallery_path)
             gallery_img = gallery_img.resize((40, 40), Image.Resampling.LANCZOS)
             gallery_photo = ImageTk.PhotoImage(gallery_img)
@@ -233,7 +233,7 @@ class MovieDirectorGUI(ctk.CTk):
 
         # Speaker button with image
         try:
-            speaker_path = os.path.join(project_dir, "speaker.png")
+            speaker_path = os.path.join(project_dir, "icons/speaker.png")
             speaker_img = Image.open(speaker_path)
             speaker_img = speaker_img.resize((40, 40), Image.Resampling.LANCZOS)
             speaker_photo = ImageTk.PhotoImage(speaker_img)
@@ -259,7 +259,7 @@ class MovieDirectorGUI(ctk.CTk):
 
         # Settings button with image
         try:
-            settings_path = os.path.join(project_dir, "settings.png")
+            settings_path = os.path.join(project_dir, "icons/settings.png")
             settings_img = Image.open(settings_path)
             settings_img = settings_img.resize((40, 40), Image.Resampling.LANCZOS)
             settings_photo = ImageTk.PhotoImage(settings_img)
