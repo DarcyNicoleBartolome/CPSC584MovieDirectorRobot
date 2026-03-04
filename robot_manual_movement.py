@@ -5,6 +5,20 @@ import readchar
 crawler = Picrawler()
 speed = 90
 
+LENGTH_SIDE = 77
+X_DEFAULT = 45
+X_TURN = 70
+X_START = 0
+Y_DEFAULT = 45
+Y_TURN = 130
+Y_WAVE =120
+Y_START = 0 
+Z_DEFAULT = -50
+Z_UP = -30
+Z_WAVE = 60
+Z_TURN = -40
+Z_PUSH = -76
+
 manual = '''
 Press keys on keyboard to control PiCrawler!
     W: Forward
@@ -24,19 +38,7 @@ def move_sideLeft(speed, current):
    crawler.do_step('stand', speed)
    ## [right front],[left front],[left rear],[right rear]
    
-   LENGTH_SIDE = 77
-   X_DEFAULT = 45
-   X_TURN = 70
-   X_START = 0
-   Y_DEFAULT = 45
-   Y_TURN = 130
-   Y_WAVE =120
-   Y_START = 0 
-   Z_DEFAULT = -50
-   Z_UP = -30
-   Z_WAVE = 60
-   Z_TURN = -40
-   Z_PUSH = -76
+   
    
    crawler.stand_position = crawler.stand_position + 1 & 1
    
@@ -79,7 +81,7 @@ def move_sideLeft(speed, current):
    ]
    
    left_forward = [
-      [[X_DEFAULT, Y_DEFAULT, current[0][2]],[X_DEFAULT, Y_DEFAULT, current[1][2]],[X_START, Y_TURN,Z_UP],[X_DEFAULT, Y_START, current[3][2]]],
+      [[X_DEFAULT, Y_DEFAULT, current[0][2]],[X_DEFAULT, Y_DEFAULT, current[1][2]],[X_START, Y_TURN, Z_UP],[X_DEFAULT, Y_START, current[3][2]]],
       [[X_DEFAULT, Y_DEFAULT, current[0][2]],[X_DEFAULT, Y_DEFAULT, current[1][2]],[X_DEFAULT, Y_DEFAULT*3,Z_UP],[X_DEFAULT, Y_START, current[3][2]]],
    ]
    
@@ -118,8 +120,21 @@ def rotateLeftFront():
 def rotateRightFront():
    pass
 
-def moveUp():
-   pass
+def moveUp(speed, current):
+   forward =  [
+      [[X_DEFAULT, Y_DEFAULT, current[0][2]],[X_TURN, Y_START,Z_UP],[X_DEFAULT, Y_START, current[2][2]],[X_DEFAULT, Y_DEFAULT, current[3][2]]],
+      [[X_DEFAULT, Y_DEFAULT, current[0][2]],[X_DEFAULT, Y_DEFAULT*2,Z_UP],[X_DEFAULT, Y_START, current[2][2]],[X_DEFAULT, Y_DEFAULT, current[3][2]]],
+      [[X_DEFAULT, Y_DEFAULT, current[0][2]],[X_DEFAULT, Y_DEFAULT*2,current[1][2]],[X_DEFAULT, Y_START, current[2][2]],[X_DEFAULT, Y_DEFAULT, current[3][2]]],
+      [[X_DEFAULT, Y_START, current[0][2]],[X_DEFAULT, Y_DEFAULT,current[1][2]],[X_DEFAULT, Y_DEFAULT, current[2][2]],[X_DEFAULT, Y_DEFAULT*2, current[3][2]]],
+      
+      [[X_DEFAULT, Y_START, current[0][2]],[X_DEFAULT, Y_DEFAULT,current[1][2]],[X_DEFAULT, Y_DEFAULT, current[2][2]],[X_DEFAULT, Y_DEFAULT*2, Z_UP]],
+      [[X_DEFAULT, Y_START, current[0][2]],[X_DEFAULT, Y_DEFAULT,current[1][2]],[X_DEFAULT, Y_DEFAULT, current[2][2]],[X_TURN, Y_START, Z_UP]],
+      [[X_DEFAULT, Y_START, current[0][2]],[X_DEFAULT, Y_DEFAULT,current[1][2]],[X_DEFAULT, Y_DEFAULT, current[2][2]],[X_DEFAULT, Y_START, current[3][2]]],
+   ]
+   
+   for coord in forward:
+      crawler.do_step(coord, speed)
+      sleep(1)
 
 def moveDown():
    pass
@@ -169,6 +184,9 @@ def main():
               lookUp()
            if 'f' == key: # move sideway right
               lookDown()
+              
+           if 'w' == key: # move sideway right
+              moveUp(speed, current_pose)
             
 if __name__ == "__main__":
     main()
