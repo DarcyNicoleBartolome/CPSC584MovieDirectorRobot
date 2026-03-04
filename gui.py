@@ -65,6 +65,8 @@ class MovieDirectorGUI(ctk.CTk):
         self.dpad = ctk.CTkFrame(self.bottom, corner_radius=16)
         self.dpad.grid(row=0, column=0, padx=12, pady=12, sticky="w")
 
+        project_dir = os.path.dirname(os.path.abspath(__file__))
+
         for r in range(3):
             self.dpad.grid_rowconfigure(r, weight=1)
         for c in range(3):
@@ -90,34 +92,86 @@ class MovieDirectorGUI(ctk.CTk):
         self.controls = ctk.CTkFrame(self.bottom, corner_radius=16)
         self.controls.grid(row=0, column=1, padx=12, pady=12, sticky="ew")
 
-        # Record button (red)
-        ctk.CTkButton(
-            self.controls,
-            text="●",
-            width=52,
-            height=52,
-            corner_radius=14,
-            fg_color="#CC0000",
-            text_color="white",
-        ).pack(side="left", padx=6)
+        # Record button (red) with image
+        try:
+            record_path = os.path.join(project_dir, "record.png")
+            record_img = Image.open(record_path)
+            record_img = record_img.resize((40, 40), Image.Resampling.LANCZOS)
+            record_photo = ImageTk.PhotoImage(record_img)
+            self.record_photo = record_photo  # Keep a reference
+            
+            ctk.CTkButton(
+                self.controls,
+                image=record_photo,
+                text="",
+                width=52,
+                height=52,
+                corner_radius=14,
+                fg_color="#CC0000",
+            ).pack(side="left", padx=6)
+        except Exception as e:
+            print(f"Error loading record image: {e}")
+            ctk.CTkButton(
+                self.controls,
+                text="●",
+                width=52,
+                height=52,
+                corner_radius=14,
+                fg_color="#CC0000",
+                text_color="white",
+            ).pack(side="left", padx=6)
 
-        # Pause button
-        ctk.CTkButton(
-            self.controls,
-            text="⏸",
-            width=52,
-            height=52,
-            corner_radius=14,
-        ).pack(side="left", padx=6)
+        # Pause button with image
+        try:
+            pause_path = os.path.join(project_dir, "pause.png")
+            pause_img = Image.open(pause_path)
+            pause_img = pause_img.resize((40, 40), Image.Resampling.LANCZOS)
+            pause_photo = ImageTk.PhotoImage(pause_img)
+            self.pause_photo = pause_photo  # Keep a reference
+            
+            ctk.CTkButton(
+                self.controls,
+                image=pause_photo,
+                text="",
+                width=52,
+                height=52,
+                corner_radius=14,
+            ).pack(side="left", padx=6)
+        except Exception as e:
+            print(f"Error loading pause image: {e}")
+            ctk.CTkButton(
+                self.controls,
+                text="⏸",
+                width=52,
+                height=52,
+                corner_radius=14,
+            ).pack(side="left", padx=6)
 
-        # Stop button
-        ctk.CTkButton(
-            self.controls,
-            text="■",
-            width=52,
-            height=52,
-            corner_radius=14,
-        ).pack(side="left", padx=6)
+        # Stop button with image
+        try:
+            stop_path = os.path.join(project_dir, "stop.png")
+            stop_img = Image.open(stop_path)
+            stop_img = stop_img.resize((40, 40), Image.Resampling.LANCZOS)
+            stop_photo = ImageTk.PhotoImage(stop_img)
+            self.stop_photo = stop_photo  # Keep a reference
+            
+            ctk.CTkButton(
+                self.controls,
+                image=stop_photo,
+                text="",
+                width=52,
+                height=52,
+                corner_radius=14,
+            ).pack(side="left", padx=6)
+        except Exception as e:
+            print(f"Error loading stop image: {e}")
+            ctk.CTkButton(
+                self.controls,
+                text="■",
+                width=52,
+                height=52,
+                corner_radius=14,
+            ).pack(side="left", padx=6)
 
         # ---- Gallery, Speaker, Settings (right) ----
         self.utility = ctk.CTkFrame(self.bottom, corner_radius=16)
@@ -125,7 +179,6 @@ class MovieDirectorGUI(ctk.CTk):
 
         # Gallery button with image
         try:
-            project_dir = os.path.dirname(os.path.abspath(__file__))
             gallery_path = os.path.join(project_dir, "gallery.png")
             gallery_img = Image.open(gallery_path)
             gallery_img = gallery_img.resize((40, 40), Image.Resampling.LANCZOS)
