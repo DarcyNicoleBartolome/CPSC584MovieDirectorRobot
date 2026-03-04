@@ -87,4 +87,5 @@ def main():
            if 'f' == key: # move sideway right
               lookDown()
             
-              
+if __name__ == "__main__":
+    main()
