@@ -84,7 +84,7 @@ def move_sideLeft(speed, current):
    global leg_mode
    ## [right front],[left front],[left rear],[right rear]
    
-   stand(speed, current)
+   # stand(speed, current)
    
    crawler.stand_position = crawler.stand_position + 1 & 1
    current = crawler.current_step_all_leg_value()
@@ -312,6 +312,12 @@ def main():
       if key in('wsadqezcrfpz-+'):
          if 'a' == key: # move sideway left
             move_sideLeft(speed, current_pose)
+            
+         if 'q' == key: # move sideway left
+            move_rotateLeft()
+            
+         if 'e' == key: # move sideway left
+            move_rotateRight()
             
          if 'd' == key: # move sideway right
             move_sideRight(speed, current_pose)
