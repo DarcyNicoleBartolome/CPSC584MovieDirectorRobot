@@ -149,12 +149,12 @@ def move_sideLeft(speed, current):
          # sleep(1)
          print(coord)
       leg_mode = 1
-         
-   for coord in new_step:
-      crawler.do_step(coord, speed)
-      # sleep(1)
-      print(coord)
-      leg_mode = 0
+   else:     
+      for coord in new_step:
+         crawler.do_step(coord, speed)
+         # sleep(1)
+         print(coord)
+         leg_mode = 0
    
    
 def move_sideRight(speed, current):
