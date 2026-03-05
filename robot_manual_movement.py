@@ -241,17 +241,11 @@ def move_sideRight(speed, current):
          print(coord)
       leg_mode = 0
 
-def move_rotateLeft():
+def move_rotateLeft(speed, current_pose):
    crawler.do_action('turn left', 1, speed)
    
-def move_rotateRight():
+def move_rotateRight(speed, current_pose):
    crawler.do_action('turn right', 1, speed)
-   
-# def rotateLeftFront():
-#    pass
-
-# def rotateRightFront():
-#    pass
 
 def moveUp(speed, current):
    
@@ -261,16 +255,9 @@ def moveDown(speed, current):
    crawler.do_action('backwrd', 1, speed)
 
 def lookUp(speed, current):
-   # spider.do_action('look_up', speed=60)
-   # setup = [[45, 45, -50], [45, 0, -50], [45, 0, -50], [45, 45, -50]]
-   # crawler.do_step(setup, speed)
-   
-   # if current != [[45, 45, -76], [45, 0, -76], [45, 0, -38], [45, 45, -30]]:
-   #    new_step = [[45, 45, (-50 - inc)], [45, 0, (-50 - inc)], [45, 0, (-50 + inc)], [45, 45, (-50 + inc)]]
-   
    coords = [
       # stand
-      [[45, 45, -50], [45, 0, -50], [45, 0, -50], [45, 45, -50]],
+      # [[45, 45, -50], [45, 0, -50], [45, 0, -50], [45, 45, -50]],
       [[45, 45, -76], [45, 0, -76], [45, 0, -38], [45, 45, -30]],
       # Note when we want to change the speed / look up speed
       # Right and left front has larger - while rl rear has less
@@ -286,7 +273,7 @@ def lookDown(speed, current):
    # spider.do_action('look_down', speed=60)
     coords = [
         # stand
-        [[45, 45, -50], [45, 0, -50], [45, 0, -50], [45, 45, -50]],
+      #   [[45, 45, -50], [45, 0, -50], [45, 0, -50], [45, 45, -50]],
         [[45, 45, -28], [45, 0, -40], [45, 0, -68], [45, 45, -76]],
       #   [[45, 45, -76], [45, 0, -76], [45, 0, -38], [45, 45, -30]], # Test this version similar to look up but opposite
     ]
@@ -314,10 +301,10 @@ def main():
             move_sideLeft(speed, current_pose)
             
          if 'q' == key: # move sideway left
-            move_rotateLeft()
+            move_rotateLeft(speed, current_pose)
             
          if 'e' == key: # move sideway left
-            move_rotateRight()
+            move_rotateRight(speed, current_pose)
             
          if 'd' == key: # move sideway right
             move_sideRight(speed, current_pose)
