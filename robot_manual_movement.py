@@ -24,11 +24,13 @@ leg_mode = 0
 LENGTH_SIDE = 77
 X_DEFAULT = 45
 X_TURN = 70
-X_START = 0
+# X_START = 0
+X_START = 10 # Widen abit
 Y_DEFAULT = 45
 Y_TURN = 130
 Y_WAVE =120
 Y_START = 10 # widen abit to avoid covering the screen 
+# Y_START = 0 # widen abit to avoid covering the screen 
 Z_DEFAULT = -50
 Z_UP = -30
 Z_WAVE = 60
@@ -332,8 +334,8 @@ def main():
             speed-=5
             print(speed)
 
-      # current_pose = crawler.current_step_all_leg_value()
-      # crawler.do_step(current_pose, speed) # Attempt not avoid the robot to stay relaxed
+      current_pose = crawler.current_step_all_leg_value()
+      crawler.do_step(current_pose, speed) # Attempt not avoid the robot to stay relaxed
             
 if __name__ == "__main__":
     main()
