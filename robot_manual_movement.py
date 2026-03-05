@@ -124,13 +124,13 @@ def move_sideLeft(speed, current):
       # [coord[1], coord[2], coord[3], coord[0]]
       
       # Lifts the right front leg
-      [[X_START, X_TURN, Z_DEFAULT],[Y_START, X_TURN, Z_UP],[Y_START, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
+      [[X_START, X_TURN, Z_DEFAULT],[Y_START, X_TURN, Z_UP],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
       
       # move the right front leg to the left
-      [[X_START, X_TURN, Z_DEFAULT],[Y_DEFAULT*2.5, X_DEFAULT, Z_UP],[Y_START, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
+      [[X_START, X_TURN, Z_DEFAULT],[Y_DEFAULT*2.5, X_DEFAULT, Z_UP],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
       
       # Put down the right front leg
-      [[X_START, X_TURN, Z_DEFAULT],[Y_DEFAULT*2.5, X_DEFAULT, Z_DEFAULT],[Y_START, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
+      [[X_START, X_TURN, Z_DEFAULT],[Y_DEFAULT*2.5, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
       
       # Move the rest legs to the leg
       [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT*2.5, X_DEFAULT, Z_DEFAULT]],
