@@ -326,8 +326,10 @@ def main():
             
          if '+' == key: # move sideway right
             speed+=5
+            print(speed)
          if '-' == key: # move sideway right
             speed-=5
+            print(speed)
             
       crawler.do_step(current_pose, speed) # Attempt not avoid the robot to stay relaxed
             
