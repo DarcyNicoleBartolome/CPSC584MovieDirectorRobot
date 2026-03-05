@@ -112,7 +112,7 @@ def move_sideLeft(speed, current):
       [[X_START, Y_DEFAULT, Z_UP],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
       
       # # Put down the right front rear leg
-      [[X_START, Y_DEFAULT, Z_DEFAULT],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
+      [[X_START, X_TURN, Z_DEFAULT],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
    ]
    
    new_step = [left_backleg_move[2], left_backleg_move[3], left_backleg_move[0], left_backleg_move[1]]
