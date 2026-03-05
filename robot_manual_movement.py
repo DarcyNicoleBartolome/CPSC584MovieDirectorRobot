@@ -5,11 +5,25 @@ import readchar
 crawler = Picrawler()
 speed = 90
 
+# LENGTH_SIDE = 77
+# X_DEFAULT = 35
+# X_TURN = 70
+# X_START = 0
+# Y_DEFAULT = 35
+# Y_TURN = 130
+# Y_WAVE =120
+# Y_START = 0 
+# Z_DEFAULT = -50
+# Z_UP = -30
+# Z_WAVE = 60
+# Z_TURN = -40
+# Z_PUSH = -76
+
 LENGTH_SIDE = 77
-X_DEFAULT = 35
+X_DEFAULT = 45
 X_TURN = 70
 X_START = 0
-Y_DEFAULT = 35
+Y_DEFAULT = 45
 Y_TURN = 130
 Y_WAVE =120
 Y_START = 0 
