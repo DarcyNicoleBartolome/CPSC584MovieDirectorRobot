@@ -156,6 +156,8 @@ def move_sideLeft(speed, current):
          # sleep(1)
          print(coord)
       leg_mode = 0
+      
+
    
    
 def move_sideRight(speed, current):
@@ -305,7 +307,6 @@ def main():
    while True:
       key = readchar.readkey()
       key = key.lower()
-      current_pose = crawler.current_step_all_leg_value()
       if key in('wsadqezcrfpz-+'):
          if 'a' == key: # move sideway left
             move_sideLeft(speed, current_pose)
@@ -330,8 +331,9 @@ def main():
          if '-' == key: # move sideway right
             speed-=5
             print(speed)
-            
-      crawler.do_step(current_pose, speed) # Attempt not avoid the robot to stay relaxed
+
+      # current_pose = crawler.current_step_all_leg_value()
+      # crawler.do_step(current_pose, speed) # Attempt not avoid the robot to stay relaxed
             
 if __name__ == "__main__":
     main()
