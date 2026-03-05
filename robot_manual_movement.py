@@ -71,7 +71,7 @@ def move_sideLeft(speed, current):
       ## [right front],[left front],[left rear],[right rear]
       
       # Starting position, start moving from the left
-      [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_START, X_TURN, Z_DEFAULT],[Y_START, X_DEFAULT, Z_DEFAULT]],
+      # [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_START, X_TURN, Z_DEFAULT],[Y_START, X_DEFAULT, Z_DEFAULT]],
       
       # Lifts the left rear leg
       [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_START, X_TURN, Z_UP],[Y_START, X_DEFAULT, Z_DEFAULT]], 
