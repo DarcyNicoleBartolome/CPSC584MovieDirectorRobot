@@ -28,7 +28,7 @@ X_START = 0
 Y_DEFAULT = 45
 Y_TURN = 130
 Y_WAVE =120
-Y_START = 0 
+Y_START = 10 # widen abit to avoid covering the screen 
 Z_DEFAULT = -50
 Z_UP = -30
 Z_WAVE = 60
@@ -237,41 +237,24 @@ def move_sideRight(speed, current):
          print(coord)
       leg_mode = 0
 
-def move_rotateLeftBack():
-   pass
+def move_rotateLeft():
+   crawler.do_action('turn left', 1, speed)
    
-def move_rotateRightBack():
-   pass
+def move_rotateRight():
+   crawler.do_action('turn right', 1, speed)
    
-def rotateLeftFront():
-   pass
+# def rotateLeftFront():
+#    pass
 
-def rotateRightFront():
-   pass
+# def rotateRightFront():
+#    pass
 
 def moveUp(speed, current):
    
    crawler.do_action('forward', 1, speed)
-   
-   # Forward with left leg
-   # forward =  [
-   #    [[X_DEFAULT, Y_DEFAULT, Z_DEFAULT],[X_TURN, Y_START,Z_UP],[X_DEFAULT, Y_START, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
-   #    [[X_DEFAULT, Y_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT*2,Z_UP],[X_DEFAULT, Y_START, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
-   #    [[X_DEFAULT, Y_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT*2,Z_DEFAULT],[X_DEFAULT, Y_START, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
-   #    [[X_DEFAULT, Y_START, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT,Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT*2, Z_DEFAULT]],
-      
-   #    [[X_DEFAULT, Y_START, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT,Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT*2, Z_UP]],
-   #    [[X_DEFAULT, Y_START, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT,Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT],[X_TURN, Y_START, Z_UP]],
-   #    [[X_DEFAULT, Y_START, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT,Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_START, Z_DEFAULT]],
-   # ]
-   
-   # for coord in forward:
-   #    crawler.do_step(coord, speed)
-   #    sleep(1)
-   #    print(coord)
 
 def moveDown(speed, current):
-   pass
+   crawler.do_action('backwrd', 1, speed)
 
 def lookUp(speed, current):
    # spider.do_action('look_up', speed=60)
@@ -345,6 +328,8 @@ def main():
             speed+=5
          if '-' == key: # move sideway right
             speed-=5
+            
+      crawler.do_step(current_pose, speed) # Attempt not avoid the robot to stay relaxed
             
 if __name__ == "__main__":
     main()
