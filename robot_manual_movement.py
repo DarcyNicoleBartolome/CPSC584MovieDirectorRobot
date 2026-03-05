@@ -5,6 +5,8 @@ import readchar
 crawler = Picrawler()
 speed = 90
 
+leg_mode = 0
+
 # LENGTH_SIDE = 77
 # X_DEFAULT = 35
 # X_TURN = 70
@@ -50,38 +52,41 @@ def show_info():
     print("\033[H\033[J",end='')  # clear terminal windows
     print(manual)
 
+# def normal_action(mode):
+#    _action = []
+#    if stand_position == 0:
+#       _action += func(self)
+#    else:
+#       temp = func(self)
+#       new_step = []
+#       for step in temp:
+#             if mode == 0:
+#                new_step = [step[1], step[0], step[3], step[2]]
+#             elif mode == 1:
+#                new_step = [step[2], step[3], step[0], step[1]]
+#             _action += [new_step]
+#    return _action
 
 def stand(speed, current): # make the robot stand up
+   test = [i for i in current]
    i = 0 # counter
-   for leg in current:
+   for leg in test:
       if leg[2] != Z_DEFAULT:
-          current[i][2] = Z_DEFAULT
+          test[i][2] = Z_DEFAULT
           i += 1
 
-   crawler.do_step(current, speed)
+   crawler.do_step(test, speed)
 
 def move_sideLeft(speed, current):
+   global leg_mode
    ## [right front],[left front],[left rear],[right rear]
    
    stand(speed, current)
    
    crawler.stand_position = crawler.stand_position + 1 & 1
-   
    current = crawler.current_step_all_leg_value()
    
-   # crawler.do_step(current, speed)
-   
-   # forward(self):
-   # forward =  [
-   #    [[X_DEFAULT, Y_DEFAULT, Z_DEFAULT],[X_TURN, Y_START,Z_UP],[X_DEFAULT, Y_START, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
-   #    [[X_DEFAULT, Y_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT*2,Z_UP],[X_DEFAULT, Y_START, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
-   #    [[X_DEFAULT, Y_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT*2,Z_DEFAULT],[X_DEFAULT, Y_START, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
-   #    [[X_DEFAULT, Y_START, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT,Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT*2, Z_DEFAULT]],
-      
-   #    [[X_DEFAULT, Y_START, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT,Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT*2, Z_UP]],
-   #    [[X_DEFAULT, Y_START, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT,Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT],[X_TURN, Y_START, Z_UP]],
-   #    [[X_DEFAULT, Y_START, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT,Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_START, Z_DEFAULT]],
-   # ]
+   # crawler.do_step(current, speed
    
    left_backleg_move =  [
       ## [right front],[left front],[left rear],[right rear]
@@ -110,36 +115,47 @@ def move_sideLeft(speed, current):
       [[X_START, Y_DEFAULT, Z_DEFAULT],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
    ]
    
-   left_frontleg_move =  [
-      ## [right front],[left front],[left rear],[right rear]
+   new_step = [left_backleg_move[2], left_backleg_move[3], left_backleg_move[0], left_backleg_move[1]]
+   
+   # left_frontleg_move =  [
+   #    ## [right front],[left front],[left rear],[right rear]
       
-      # Lifts the right front leg
-      [[X_START, Y_DEFAULT, Z_DEFAULT],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
+   #    # Lifts the right front leg
+   #    [[X_START, Y_DEFAULT, Z_DEFAULT],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
       
-      # move the right front leg to the left
-      [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT*2.5, X_DEFAULT, Z_UP],[Y_DEFAULT, X_START, Z_DEFAULT]],
+   #    # move the right front leg to the left
+   #    [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT*2.5, X_DEFAULT, Z_UP],[Y_DEFAULT, X_START, Z_DEFAULT]],
       
-      # Put down the right front leg
-      [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT*2.5, X_DEFAULT,Z_DEFAULT],[Y_DEFAULT, X_START, Z_DEFAULT]],
+   #    # Put down the right front leg
+   #    [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT*2.5, X_DEFAULT,Z_DEFAULT],[Y_DEFAULT, X_START, Z_DEFAULT]],
       
-      # Move the rest legs to the leg
-      [[Y_DEFAULT*2.5, X_DEFAULT, Z_DEFAULT],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
+   #    # Move the rest legs to the leg
+   #    [[Y_DEFAULT*2.5, X_DEFAULT, Z_DEFAULT],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
       
-      # Lift the left back leg up
-      [[Y_DEFAULT*2.5, X_DEFAULT, Z_UP],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT]],
+   #    # Lift the left back leg up
+   #    [[Y_DEFAULT*2.5, X_DEFAULT, Z_UP],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT]],
       
-      # Move the left back leg to the left
-      [[X_START, Y_DEFAULT, Z_UP],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
+   #    # Move the left back leg to the left
+   #    [[X_START, Y_DEFAULT, Z_UP],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
       
-      # # Put down the left back leg
-      # [[X_START, Y_DEFAULT, Z_DEFAULT],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
-      [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_START, X_TURN, Z_DEFAULT],[Y_START, X_DEFAULT, Z_DEFAULT]], 
-   ]
-      
-   for coord in left_backleg_move:
+   #    # # Put down the left back leg
+   #    # [[X_START, Y_DEFAULT, Z_DEFAULT],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
+   #    [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_START, X_TURN, Z_DEFAULT],[Y_START, X_DEFAULT, Z_DEFAULT]], 
+   # ]
+   
+   if leg_mode == 0:
+      for coord in left_backleg_move:
+         crawler.do_step(coord, speed)
+         # sleep(1)
+         print(coord)
+      leg_mode = 1
+         
+   for coord in new_step:
       crawler.do_step(coord, speed)
       # sleep(1)
       print(coord)
+      leg_mode = 0
+   
    
 def move_sideRight(speed, current):
    crawler.do_step('stand', speed)
@@ -183,6 +199,12 @@ def moveDown(speed, current):
 
 def lookUp(speed, current):
    # spider.do_action('look_up', speed=60)
+   # setup = [[45, 45, -50], [45, 0, -50], [45, 0, -50], [45, 45, -50]]
+   # crawler.do_step(setup, speed)
+   
+   # if current != [[45, 45, -76], [45, 0, -76], [45, 0, -38], [45, 45, -30]]:
+   #    new_step = [[45, 45, (-50 - inc)], [45, 0, (-50 - inc)], [45, 0, (-50 + inc)], [45, 45, (-50 + inc)]]
+   
    coords = [
       # stand
       [[45, 45, -50], [45, 0, -50], [45, 0, -50], [45, 45, -50]],
@@ -190,6 +212,8 @@ def lookUp(speed, current):
       # Note when we want to change the speed / look up speed
       # Right and left front has larger - while rl rear has less
    ]
+
+
 
    for coord in coords:
       crawler.do_step(coord, speed)
@@ -223,7 +247,7 @@ def main():
       key = readchar.readkey()
       key = key.lower()
       current_pose = crawler.current_step_all_leg_value()
-      if key in('wsadqezcrf'):
+      if key in('wsadqezcrfpz'):
          if 'a' == key: # move sideway left
             move_sideLeft(speed, current_pose)
             
