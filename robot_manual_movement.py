@@ -83,20 +83,17 @@ def move_sideLeft(speed, current):
    #    [[X_DEFAULT, Y_START, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT,Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_START, Z_DEFAULT]],
    # ]
    
-   left =  [
+   left_backleg_move =  [
       ## [right front],[left front],[left rear],[right rear]
-      
-      # Starting position, start moving from the left
-      # [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_START, X_TURN, Z_DEFAULT],[Y_START, X_DEFAULT, Z_DEFAULT]],
       
       # Lifts the left rear leg
       [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_START, X_TURN, Z_UP],[Y_START, X_DEFAULT, Z_DEFAULT]], 
       
       # move the left rear leg to the left
-      [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT*2.5, X_DEFAULT, Z_UP],[Y_DEFAULT, X_START, Z_DEFAULT]],
+      [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT*2.5, X_DEFAULT, Z_UP],[Y_START, X_DEFAULT, Z_DEFAULT]],
       
       # Put down the left rear leg
-      [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT*2.5, X_DEFAULT,Z_DEFAULT],[Y_DEFAULT, X_START, Z_DEFAULT]],
+      [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT*2.5, X_DEFAULT,Z_DEFAULT],[Y_START, X_DEFAULT, Z_DEFAULT]],
       
       # Move the rest legs to the leg
       [[Y_DEFAULT*2.5, X_DEFAULT, Z_DEFAULT],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
@@ -111,6 +108,32 @@ def move_sideLeft(speed, current):
       
       # # Put down the right front rear leg
       [[X_START, Y_DEFAULT, Z_DEFAULT],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
+   ]
+   
+   left_frontleg_move =  [
+      ## [right front],[left front],[left rear],[right rear]
+      
+      # Lifts the right front leg
+      [[X_START, Y_DEFAULT, Z_DEFAULT],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
+      
+      # move the right front leg to the left
+      [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT*2.5, X_DEFAULT, Z_UP],[Y_DEFAULT, X_START, Z_DEFAULT]],
+      
+      # Put down the right front leg
+      [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT*2.5, X_DEFAULT,Z_DEFAULT],[Y_DEFAULT, X_START, Z_DEFAULT]],
+      
+      # Move the rest legs to the leg
+      [[Y_DEFAULT*2.5, X_DEFAULT, Z_DEFAULT],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
+      
+      # Lift the left back leg up
+      [[Y_DEFAULT*2.5, X_DEFAULT, Z_UP],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT]],
+      
+      # Move the left back leg to the left
+      [[X_START, Y_DEFAULT, Z_UP],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
+      
+      # # Put down the left back leg
+      # [[X_START, Y_DEFAULT, Z_DEFAULT],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
+      [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_START, X_TURN, Z_DEFAULT],[Y_START, X_DEFAULT, Z_DEFAULT]], 
    ]
       
    for coord in left:
