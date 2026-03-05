@@ -38,9 +38,11 @@ def show_info():
 
 
 def stand(speed, current): # make the robot stand up
-   for i, leg in current:
+   i = 0 # counter
+   for leg in current:
       if leg[2] != Z_DEFAULT:
           current[i][2] = Z_DEFAULT
+          i += 1
 
    crawler.do_step(current, speed)
 
