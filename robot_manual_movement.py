@@ -51,6 +51,7 @@ Press keys on keyboard to control PiCrawler!
 def show_info():
     print("\033[H\033[J",end='')  # clear terminal windows
     print(manual)
+    print("speed:", speed)
 
 # def normal_action(mode):
 #    _action = []
@@ -322,7 +323,7 @@ def main():
       key = readchar.readkey()
       key = key.lower()
       current_pose = crawler.current_step_all_leg_value()
-      if key in('wsadqezcrfpz'):
+      if key in('wsadqezcrfpz-+'):
          if 'a' == key: # move sideway left
             move_sideLeft(speed, current_pose)
             
@@ -339,6 +340,11 @@ def main():
             
          if 'p' == key: # move sideway right
             crawler.do_step('stand', speed)
+            
+         if '+' == key: # move sideway right
+            speed+=5
+         if '-' == key: # move sideway right
+            speed-=5
             
 if __name__ == "__main__":
     main()
