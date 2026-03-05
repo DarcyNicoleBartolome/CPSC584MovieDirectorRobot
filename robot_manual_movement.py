@@ -113,9 +113,11 @@ def move_sideLeft(speed, current):
       
       # # Put down the right front rear leg
       [[X_START, X_TURN, Z_DEFAULT],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
+      
+      [[X_START, X_TURN, Z_UP],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
    ]
    
-   new_step = [left_backleg_move[2], left_backleg_move[3], left_backleg_move[0], left_backleg_move[1]]
+   # new_step = [left_backleg_move[2], left_backleg_move[3], left_backleg_move[0], left_backleg_move[1]]
    
    # left_frontleg_move =  [
    #    ## [right front],[left front],[left rear],[right rear]
@@ -153,9 +155,9 @@ def move_sideLeft(speed, current):
       for coord in left_backleg_move:
          new_step = [coord[1], coord[2], coord[3], coord[0]]
          crawler.do_step(new_step, speed)
-         # sleep(1)
+         sleep(1)
          print(coord)
-         leg_mode = 0
+      leg_mode = 0
    
    
 def move_sideRight(speed, current):
