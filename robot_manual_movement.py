@@ -136,7 +136,7 @@ def move_sideLeft(speed, current):
       [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_START, X_TURN, Z_DEFAULT],[Y_START, X_DEFAULT, Z_DEFAULT]], 
    ]
       
-   for coord in left:
+   for coord in left_backleg_move:
       crawler.do_step(coord, speed)
       # sleep(1)
       print(coord)
