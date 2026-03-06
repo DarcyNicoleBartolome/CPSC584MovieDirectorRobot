@@ -7,6 +7,7 @@ import pyaudio
 
 # Socket
 HOST = socket.gethostname()
+print(HOST)
 PORT = 5001
 
 # Audio
