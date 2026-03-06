@@ -7,20 +7,6 @@ speed = 90
 
 leg_mode = 0
 
-# LENGTH_SIDE = 77
-# X_DEFAULT = 35
-# X_TURN = 70
-# X_START = 0
-# Y_DEFAULT = 35
-# Y_TURN = 130
-# Y_WAVE =120
-# Y_START = 0 
-# Z_DEFAULT = -50
-# Z_UP = -30
-# Z_WAVE = 60
-# Z_TURN = -40
-# Z_PUSH = -76
-
 LENGTH_SIDE = 77
 X_DEFAULT = 45
 X_TURN = 70
@@ -30,7 +16,7 @@ Y_DEFAULT = 45
 Y_TURN = 130
 Y_WAVE =120
 Y_START = 10 # widen abit to avoid covering the screen 
-# Y_START = 0 # widen abit to avoid covering the screen 
+# Y_START = 0 
 Z_DEFAULT = -50
 Z_UP = -30
 Z_WAVE = 60
@@ -117,10 +103,8 @@ def move_sideLeft(speed, current):
       # # Put down the right front rear leg
       [[X_START, X_TURN, Z_DEFAULT],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
       
-      # [[X_START, X_TURN, Z_UP],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
    ]
    
-   # new_step = [left_backleg_move[2], left_backleg_move[3], left_backleg_move[0], left_backleg_move[1]]
    
    left_frontleg_move =  [
       
@@ -158,8 +142,6 @@ def move_sideLeft(speed, current):
          # sleep(1)
          print(coord)
       leg_mode = 0
-      
-
    
    
 def move_sideRight(speed, current):
@@ -187,11 +169,9 @@ def move_sideRight(speed, current):
       
       # Move the rest legs to the leg
       [[X_START, Y_DEFAULT, Z_DEFAULT], [Y_DEFAULT*2.5, X_DEFAULT, Z_DEFAULT], [Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
-      # [[Y_DEFAULT-30, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_START, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
       
       # Lift the left front leg up
       [[X_START, Y_DEFAULT, Z_DEFAULT], [Y_DEFAULT*2.5, X_DEFAULT, Z_UP], [Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT]],
-      # [[Y_DEFAULT-30, X_DEFAULT, Z_UP],[Y_DEFAULT, X_START, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT]],
       
       # Move the left front leg to the left
       [[X_START, Y_DEFAULT, Z_DEFAULT], [X_START, Y_DEFAULT, Z_UP], [Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
@@ -199,10 +179,8 @@ def move_sideRight(speed, current):
       # # Put down the left front rear leg
       [[X_START, Y_DEFAULT, Z_DEFAULT], [X_START, X_TURN, Z_DEFAULT], [Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
       
-      # [[X_START, X_TURN, Z_UP],[X_START, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
    ]
    
-   # new_step = [left_backleg_move[2], left_backleg_move[3], left_backleg_move[0], left_backleg_move[1]]
    
    right_frontleg_move =  [
       
@@ -252,7 +230,7 @@ def moveUp(speed, current):
    crawler.do_action('forward', 1, speed)
 
 def moveDown(speed, current):
-   crawler.do_action('backwrd', 1, speed)
+   crawler.do_action('backward', 1, speed)
 
 def lookUp(speed, current):
    coords = [
@@ -316,6 +294,9 @@ def main():
             
          if 'w' == key: # move sideway right
             moveUp(speed, current_pose)
+            
+         if 's' == key: # move sideway right
+            moveDown(speed, current_pose)
             
          if 'p' == key: # move sideway right
             crawler.do_step('stand', speed)
