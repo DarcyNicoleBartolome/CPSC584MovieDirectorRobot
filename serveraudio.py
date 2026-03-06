@@ -6,15 +6,16 @@ import socket
 import pyaudio
 
 # Socket
-HOST = socket.gethostname()
-print(HOST)
+# HOST = socket.gethostname()
+# !! Change into the Robot's IP when testing with the group5 SD card
+HOST = "172.17.10.218" # Raspy's with CPSC584 wifi
 PORT = 5001
 
 # Audio
 p = pyaudio.PyAudio()
 CHUNK = 1024 * 4
 FORMAT = pyaudio.paInt16
-CHANNELS = 2
+CHANNELS = 1
 RATE = 44100
 stream = p.open(format=FORMAT,
                 channels=CHANNELS,
