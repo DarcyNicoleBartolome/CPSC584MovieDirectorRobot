@@ -16,7 +16,7 @@ class MovieDirectorGUI(ctk.CTk):
         self.geometry("1000x650")
         self.minsize(850, 560)
 
-        self.stream_url = "http://172.17.10.218:8080/stream.mjpg"
+        self.stream_url = "http://172.20.10.2:8080/stream.mjpg"
         project_dir = os.path.dirname(os.path.abspath(__file__))
 
         # Layout
