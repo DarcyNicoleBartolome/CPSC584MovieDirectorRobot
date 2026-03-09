@@ -5,13 +5,22 @@ import threading
 import time
 import os
 
+# Attempt socket programming
+import socket
+
+# !! Change into the Robot's IP when testing with the group5 SD card
+SERVER_HOST = "172.17.10.218" # Raspy's with CPSC584 wifi
+SERVER_PORT = 5001
+
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
 
 class MovieDirectorGUI(ctk.CTk):
-    def __init__(self):
+    def __init__(self, client_socket):
         super().__init__()
+        self.client_socket = client_socket
+        
         self.title("Movie Director Miniature")
         self.geometry("1000x650")
         self.minsize(850, 560)
@@ -152,7 +161,7 @@ class MovieDirectorGUI(ctk.CTk):
                 width=44,
                 height=44,
                 corner_radius=14,
-                command=lambda a=action: self.on_move(a),
+                command=lambda a=action: self.on_move(client_socket,a),
             ).grid(row=r, column=c, padx=6, pady=6, sticky="nsew")
 
         dpad_btn("▲", "up", 0, 1)
@@ -404,13 +413,47 @@ class MovieDirectorGUI(ctk.CTk):
     def on_right_action(self, idx):
         print("Right button", idx)
 
-    def on_move(self, direction):
+    def on_move(self, direction, client_socket):
         print("Move:", direction)
+        self.sendMessage(client_socket, direction)
         
     def slider_event(self, value):
         print(value)
-
+        
+    # Handles when user sends message of their input to the chatroom
+    def sendMessage(self, client_socket, message):
+        # If user tries to send an empty message, nothing happens and return
+        if not message:
+            return
+        
+        try:
+            # if the client did not send a command, send it to the server as a message the user want to broadcast to all users in the chatroom
+            client_socket.sendall(message.encode("utf-8"))
+            
+        except Exception as e: # If other Exception error detected, print out the error and close the chatroom window after half a second
+            print(f"Error found while sending the message: {e}")
+            # print(f"Leaving the chatroom...")
+            # root.after(500, root.quit)
+        
+def start_client():
+    """ Start the client and connect to the server. """
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
+            
+            client_socket.connect((SERVER_HOST, SERVER_PORT))
+            # Setting up the GUI
+            app = MovieDirectorGUI(client_socket)
+            # Starts the Tkinter event loop to run and show the GUI
+            app.mainloop()
+    
+    except ConnectionRefusedError: # If connection error detected, print out the error
+        print(f"Connection to {SERVER_HOST}:{SERVER_PORT} failed. Ensure the server is running.")
+    
+    except Exception as e: # If other Exception error detected, print out the error
+        print(f"An error occurred while running the application: {e}")
+        print(f"You are forced to leave the chatroom... Please retry and come back again")
 
 if __name__ == "__main__":
-    app = MovieDirectorGUI()
-    app.mainloop()
+    start_client()
+    # app = MovieDirectorGUI()
+    # app.mainloop()
