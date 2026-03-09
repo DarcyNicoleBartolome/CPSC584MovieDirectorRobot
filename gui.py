@@ -30,6 +30,11 @@ class MovieDirectorGUI(ctk.CTk):
         self.left = ctk.CTkFrame(self, corner_radius=16)
         self.left.grid(row=0, column=0, padx=(18, 10), pady=(18, 10), sticky="ns")
         
+        # Test Zoom appear
+        self.showZoom = False
+        # Test Director Speaker
+        self.setSpeaker = False
+        
         # Left side icons: camera, focus, zoom
         left_icons = ["icons/camera.png", "icons/focus.png", "icons/zoom.png", "icons/joystick.png"]
         left_photos = []
@@ -119,6 +124,17 @@ class MovieDirectorGUI(ctk.CTk):
         # Bottom bar
         self.bottom = ctk.CTkFrame(self, corner_radius=16)
         self.bottom.grid(row=1, column=0, columnspan=3, padx=18, pady=(10, 18), sticky="ew")
+        
+        # !! TEST SLIDER design
+        
+        self.zoom_slider = ctk.CTkSlider(
+                self.center,
+                from_=0, 
+                to=100,
+                # fg_color=,
+                # number_of_steps=100,
+                command=lambda value=i: self.on_right_action(value)
+            )
 
         # ---- Navigation (D-pad) ----
         self.dpad = ctk.CTkFrame(self.bottom, corner_radius=16)
@@ -268,23 +284,26 @@ class MovieDirectorGUI(ctk.CTk):
             speaker_photo = ImageTk.PhotoImage(speaker_img)
             self.speaker_photo = speaker_photo  # Keep a reference
             
-            ctk.CTkButton(
+            speaker = ctk.CTkButton(
                 self.utility,
                 image=speaker_photo,
                 text="",
                 width=45,
                 height=45,
                 corner_radius=14,
-            ).pack(side="left", padx=6)
+                
+            )
+            speaker.pack(side="left", padx=6)
         except Exception as e:
             print(f"Error loading speaker image: {e}")
-            ctk.CTkButton(
+            speaker = ctk.CTkButton(
                 self.utility,
                 text="🔊",
                 width=52,
                 height=52,
                 corner_radius=14,
-            ).pack(side="left", padx=6)
+            )
+            speaker.pack(side="left", padx=6)
 
         # Settings button with image
         try:
@@ -370,12 +389,26 @@ class MovieDirectorGUI(ctk.CTk):
     # callbacks
     def on_left_action(self, idx):
         print("Left button", idx)
+        
+        if idx == 2: # Zoom button is clicked
+            self.showZoom = not self.showZoom
+            if self.showZoom:
+                self.zoom_slider.grid(row=1, column=0, columnspan=3, padx=18, pady=(10, 18), sticky="ew")
+                print("open slider")
+            else:
+                print("close slider")
+                # self.zoom_slider.configure(state="disabled")
+                self.zoom_slider.grid_forget()
+            
 
     def on_right_action(self, idx):
         print("Right button", idx)
 
     def on_move(self, direction):
         print("Move:", direction)
+        
+    def slider_event(self, value):
+        print(value)
 
 
 if __name__ == "__main__":
