@@ -130,7 +130,7 @@ def zoom(value):
    # This syncs us to the arrival of a new camera frame:
    picam2.capture_metadata()
 
-   size = [int(s * (100.0 - int(float(value)) / 100.0)) for s in size]
+   size = [int(s * ((100.0 - int(float(value))) / 100.0)) for s in size]
    offset = [(r - s) // 2 for r, s in zip(full_res, size)]
    picam2.set_controls({"ScalerCrop": offset + size})
    
