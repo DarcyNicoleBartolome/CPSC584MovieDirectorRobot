@@ -55,7 +55,7 @@ class MovieDirectorGUI(ctk.CTk):
         
         # Display Zoom state
         self.showZoom = False
-        self.zoomstate = "+"
+        self.current_zoomvalue = 50/2
         
         # Left side icons: camera, focus, zoom
         left_icons = ["icons/camera.png", "icons/focus.png", "icons/zoom.png", "icons/joystick.png"]
@@ -438,11 +438,10 @@ class MovieDirectorGUI(ctk.CTk):
     def zoom_value(self, value):
         time.sleep(0.05)
         print("Zoom: ", value)
-        # self.zoomstate = "+"
-        if value < self.zoomstate:
+        state = "+"
+        if value < self.current_zoomvalue:
             state = "-"
-        elif value > self.zoomstate:
-            state = "+"
+        self.current_zoomvalue = value
         self.sendMessage(f"zoom:{value}:{state}")
         
 
