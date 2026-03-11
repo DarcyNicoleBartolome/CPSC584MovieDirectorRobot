@@ -17,7 +17,7 @@ RECORD_SECONDS = 3
 WAVE_OUTPUT_FILENAME = "output.wav"
 
 # !! Change into the Robot's IP when testing with the group5 SD card
-SERVER_HOST = "172.17.10.158" # Raspy's with CPSC584 wifi
+SERVER_HOST = "172.17.10.218" # Raspy's with CPSC584 wifi
 SERVER_PORT = 5001
 
 ctk.set_appearance_mode("dark")
