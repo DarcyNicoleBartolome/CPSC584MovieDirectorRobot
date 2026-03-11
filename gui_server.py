@@ -479,10 +479,11 @@ def process_request(data, client_socket, client_address):
       zoom(message[1], message[2])
       
    else: # Assume it's audio
-      while data != "":
+      audio_data = data
+      while audio_data != "":
          try:
-               data = client_socket.recv(4096)
-               stream.write(data)
+               audio_data = client_socket.recv(4096)
+               stream.write(audio_data)
          except socket.error:
                print("Client Disconnected")
                break

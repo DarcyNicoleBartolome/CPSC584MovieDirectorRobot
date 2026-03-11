@@ -378,7 +378,7 @@ class MovieDirectorGUI(ctk.CTk):
         
         # --- Director Speaker stream state --- 
         self.send_audio_event = threading.Event()
-        self.send_audio_event.set()  # audio enabled
+        # self.send_audio_event.set()  # audio enabled
         threading.Thread(target=self.audio_sender, daemon=True).start()
 
     def _reader_loop(self):
@@ -453,7 +453,7 @@ class MovieDirectorGUI(ctk.CTk):
         self.sendMessage(f"move:{direction}")
         
     def directorSpeaker(self):
-        self.setSpeaker = not self.setSpeaker
+        # self.setSpeaker = not self.setSpeaker
         print(f"set speaker: {self.setSpeaker}") 
         
         if self.send_audio_event.is_set():
@@ -467,11 +467,12 @@ class MovieDirectorGUI(ctk.CTk):
     #     else:
     #         send_audio_event.set() 
         
-    def audio_sender(self, data, client_socket):
+    def audio_sender(self):
+        print("audio thread started")
         while True:
             if self.send_audio_event.is_set():
                 data = self.stream.read(CHUNK)
-                client_socket.sendall(data)
+                self.client_socket.sendall(data)
             else:
                 time.sleep(0.01) 
         
