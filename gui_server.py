@@ -127,20 +127,20 @@ def zoom(value, state):
    # sync up the arrival of the new frame
    picam2.capture_metadata()
 
-   zoom_factor = (100.0 - float(value)) / 100.0
+   zoom = float(value)
 
-   if state == "-":   # zoom out
-      zoom_factor = 1 / zoom_factor
+   sensor_w, sensor_h = full_res
 
-   size = [int(s * zoom_factor) for s in size]
+   # calculate crop size
+   crop_w = int(sensor_w / zoom)
+   crop_h = int(sensor_h / zoom)
 
-   # clamp so it never exceeds full resolution
-   size = [min(s, r) for s, r in zip(size, full_res)]
-
-   offset = [(r - s) // 2 for r, s in zip(full_res, size)]
+   # center crop
+   offset_x = (sensor_w - crop_w) // 2
+   offset_y = (sensor_h - crop_h) // 2
 
    picam2.set_controls({
-      "ScalerCrop": offset + size
+      "ScalerCrop": [offset_x, offset_y, crop_w, crop_h]
    })
    
 
