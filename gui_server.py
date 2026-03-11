@@ -48,7 +48,7 @@ Z_PUSH = -76
 # Audio
 
 p = pyaudio.PyAudio()
-CHUNK = 1024
+CHUNK = 1024 * 4
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 44100
@@ -478,6 +478,16 @@ def process_request(data, client_socket, client_address):
       print("Zoom On") # Debug print
       zoom(message[1], message[2])
       
+   # else: # Assume it's audio
+   #    audio_data = data
+   #    while audio_data != "":
+   #       try:
+   #             audio_data = client_socket.recv(4096)
+   #             stream.write(audio_data)
+   #       except socket.error:
+   #             print("Client Disconnected")
+   #             break
+   
    elif data.startswith(b"AUD:"):
         audio_data = data[4:]
         stream.write(audio_data)

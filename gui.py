@@ -9,8 +9,7 @@ import os
 import socket
 import pyaudio
 
-# CHUNK = 1024 * 4
-CHUNK = 1024
+CHUNK = 1024 * 4
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 44100
