@@ -453,7 +453,7 @@ class MovieDirectorGUI(ctk.CTk):
         self.sendMessage(f"move:{direction}")
         
     def directorSpeaker(self):
-        # self.setSpeaker = not self.setSpeaker
+        self.setSpeaker = not self.setSpeaker
         print(f"set speaker: {self.setSpeaker}") 
         
         if self.send_audio_event.is_set():
@@ -461,20 +461,27 @@ class MovieDirectorGUI(ctk.CTk):
         else:
             self.send_audio_event.set()
         
-    # def toggle_audio():
-    #     if send_audio_event.is_set():
-    #         send_audio_event.clear()
-    #     else:
-    #         send_audio_event.set() 
-        
+    # def audio_sender(self):
+    #     print("Audio thread started")
+    #     while True:
+    #         if self.send_audio_event.is_set():
+    #             data = self.stream.read(CHUNK, exception_on_overflow=False)
+    #             self.client_socket.sendall(data)
+    #         else:
+    #             time.sleep(0.01) 
+    
     def audio_sender(self):
-        print("audio thread started")
+        print("Audio thread started")
+
         while True:
+            data = self.stream.read(CHUNK, exception_on_overflow=False)
+
             if self.send_audio_event.is_set():
-                data = self.stream.read(CHUNK)
-                self.client_socket.sendall(data)
-            else:
-                time.sleep(0.01) 
+                try:
+                    self.client_socket.sendall(b"AUD:" + data)
+                except Exception as e:
+                    print("Audio send error:", e)
+                    break
         
     # Handles when user sends message of their input to the chatroom
     def sendMessage(self, message):
@@ -488,8 +495,6 @@ class MovieDirectorGUI(ctk.CTk):
             
         except Exception as e: # If other Exception error detected, print out the error and close the chatroom window after half a second
             print(f"Error found while sending the message: {e}")
-            # print(f"Leaving the chatroom...")
-            # root.after(500, root.quit)
         
 def start_client():
     """ Start the client and connect to the server. """
