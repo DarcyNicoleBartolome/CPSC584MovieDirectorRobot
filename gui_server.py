@@ -60,7 +60,10 @@ Z_PUSH = -76
 #                 frames_per_buffer=CHUNK)
 
 
-# Video streaming
+# Initialize picamera
+picam2 = Picamera2()
+
+#region ######### Video streaming #########
 class StreamingOutput(io.BufferedIOBase):
     def __init__(self):
         self.frame = None
@@ -111,20 +114,44 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(b"\r\n")
         except Exception:
             pass
+         
+def zoom(value):
+   global picam2
+   # test state
+   '''
+   if state is 1, camera zooms in
+   else if -1, camera zooms out
+   '''
+   
+   size = picam2.capture_metadata()['ScalerCrop'][2:]
+
+   full_res = picam2.camera_properties['PixelArraySize']
+   
+   # This syncs us to the arrival of a new camera frame:
+   picam2.capture_metadata()
+
+   size = [int(s * (100.0 - int(value) / 100.0)) for s in size]
+   offset = [(r - s) // 2 for r, s in zip(full_res, size)]
+   picam2.set_controls({"ScalerCrop": offset + size})
+   
 
 def VideoStream():
-    picam2 = Picamera2()
-    # You can change size/fps later
-    picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))
-    picam2.start_recording(MJPEGEncoder(), FileOutput(output))
+   global picam2
+   #  picam2 = Picamera2()
+   
+   # You can change size/fps later
+   picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))
+   picam2.start_recording(MJPEGEncoder(), FileOutput(output))
 
-    server = HTTPServer(("0.0.0.0", 8080), Handler)
-    print("MJPEG stream:")
-    print("  http://<PI_IP>:8080/stream.mjpg")
-    print("  http://<PI_IP>:8080/  (preview page)")
-    server.serve_forever()
+   server = HTTPServer(("0.0.0.0", 8080), Handler)
+   print("MJPEG stream:")
+   print("  http://<PI_IP>:8080/stream.mjpg")
+   print("  http://<PI_IP>:8080/  (preview page)")
+   server.serve_forever()
+    
+#endregion ######### Video streaming #########
 
-
+#region ######### Crawler Movement #########
 def stand(speed, current): # make the robot stand up
    test = [i for i in current]
    i = 0 # counter
@@ -293,8 +320,6 @@ def lookUp(speed, current):
       [[45, 45, -76], [45, 0, -76], [45, 0, -38], [45, 45, -30]],
    ]
 
-
-
    for coord in coords:
       crawler.do_step(coord, speed)
 
@@ -306,7 +331,10 @@ def lookDown(speed, current):
     ]
     for coord in coords:
         crawler.do_step(coord, speed)
+        
+#endregion ######### Crawler Movement #########
 
+#region ######### Socket Programming / Start running the server #########
 def get_local_ip(self):
    """Get local IP address"""
    try:
@@ -390,37 +418,45 @@ def process_request(request_data, client_socket, client_address):
       print(f"the request data is empty")
       # logging.info(f"the request data is empty")
       return
+   
+   # parse the message
+   message = request_data.split(':')
 
-   elif 'left' == request_data: # move sideway left
-      move_sideLeft(speed, current_pose)
-   elif 'q' == request_data: # move sideway left
-      move_rotateLeft(speed, current_pose)
+   if message[0] == "move":
+      if 'left' == message[1]: # move sideway left
+         move_sideLeft(speed, current_pose)
+      elif 'q' == message: # move sideway left
+         move_rotateLeft(speed, current_pose)
+         
+      elif 'e' == message[1]: # move sideway right
+         move_rotateRight(speed, current_pose)
+         
+      elif 'right' == message[1]: # move sideway right
+         move_sideRight(speed, current_pose)
+         
+      elif 'r' == message[1]: # move sideway right
+         lookUp(speed, current_pose)
+      elif 'f' == message[1]: # move sideway right
+         lookDown(speed, current_pose)
+         
+      elif 'up' == message[1]: # move sideway right
+         moveUp(speed, current_pose)
+         
+      elif 'down' == message[1]: # move sideway right
+         moveDown(speed, current_pose)
+         
+      elif 'stand' == message[1]: # stand position
+         crawler.do_step('stand', speed)
+         
+      elif '+' == message[1]: # move sideway right
+         speed+=5
+         print(speed)
+      elif '-' == message[1]: # move sideway right
+         speed-=5
+      else: return # Do nothing
       
-   elif 'e' == request_data: # move sideway right
-      move_rotateRight(speed, current_pose)
-      
-   elif 'right' == request_data: # move sideway right
-      move_sideRight(speed, current_pose)
-      
-   elif 'r' == request_data: # move sideway right
-      lookUp(speed, current_pose)
-   elif 'f' == request_data: # move sideway right
-      lookDown(speed, current_pose)
-      
-   elif 'up' == request_data: # move sideway right
-      moveUp(speed, current_pose)
-      
-   elif 'down' == request_data: # move sideway right
-      moveDown(speed, current_pose)
-      
-   elif 'stand' == request_data: # stand position
-      crawler.do_step('stand', speed)
-      
-   elif '+' == request_data: # move sideway right
-      speed+=5
-      print(speed)
-   elif '-' == request_data: # move sideway right
-      speed-=5
+   if request_data[0] == "zoom":
+      zoom(message[1])
       
    # else: # Assume it's audio
    #    while data != "":
@@ -431,6 +467,7 @@ def process_request(request_data, client_socket, client_address):
    #             print("Client Disconnected")
    #             break
       
+#endregion ######### Socket Programming / Start running the server #########
 
 # If runs, the server starts
 if __name__ == '__main__':

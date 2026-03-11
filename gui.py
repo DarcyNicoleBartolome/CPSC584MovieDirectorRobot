@@ -154,7 +154,7 @@ class MovieDirectorGUI(ctk.CTk):
                 to=100,
                 # fg_color=,
                 # number_of_steps=100,
-                command=lambda value=i: self.on_right_action(value)
+                command=lambda value=i: self.zoom_value(value)
             )
 
         # ---- Navigation (D-pad) ----
@@ -433,10 +433,15 @@ class MovieDirectorGUI(ctk.CTk):
 
     def on_right_action(self, idx):
         print("Right button", idx)
+        
+    def zoom_value(self, value):
+        print("Zoom: ", value)
+        self.sendMessage(f"zoom:{value}")
+        
 
     def on_move(self, direction):
         print("Move:", direction)
-        self.sendMessage(direction)
+        self.sendMessage(f"move:{direction}")
         
     # def playAudio(self):
     #     if self.setSpeaker and self._audioStop.is_set():
@@ -456,6 +461,7 @@ class MovieDirectorGUI(ctk.CTk):
         
     def directorSpeaker(self):
         self.setSpeaker = not self.setSpeaker
+        print(f"set speaker: {self.setSpeaker}")
         
         # if self.setSpeaker == False:
         #     self.audio_on_close()
