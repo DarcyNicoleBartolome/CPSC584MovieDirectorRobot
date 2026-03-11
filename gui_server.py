@@ -119,7 +119,7 @@ class Handler(BaseHTTPRequestHandler):
         except Exception:
             pass
          
-def zoom(value):
+def zoom(value, state):
    global picam2
    global size
    global full_res
@@ -138,7 +138,7 @@ def zoom(value):
 
    size = [int(s * ((100.0 - int(float(value))) / 100.0)) for s in size]
    offset = [(r - s) // 2 for r, s in zip(full_res, size)]
-   picam2.set_controls({"ScalerCrop": offset + size})
+   picam2.set_controls({"ScalerCrop": offset + size * (state)})
    
 
 def VideoStream():
@@ -468,7 +468,7 @@ def process_request(request_data, client_socket, client_address):
       
    elif message[0] == "zoom":
       print("Zoom On") # Debug print
-      zoom(message[1])
+      zoom(message[1], message[2])
       
    # else: # Assume it's audio
    #    while data != "":

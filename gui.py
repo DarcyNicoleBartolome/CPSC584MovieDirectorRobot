@@ -53,8 +53,9 @@ class MovieDirectorGUI(ctk.CTk):
         self.left = ctk.CTkFrame(self, corner_radius=16)
         self.left.grid(row=0, column=0, padx=(18, 10), pady=(18, 10), sticky="ns")
         
-        # Test Zoom appear
+        # Display Zoom state
         self.showZoom = False
+        self.zoomstate = "+"
         
         # Left side icons: camera, focus, zoom
         left_icons = ["icons/camera.png", "icons/focus.png", "icons/zoom.png", "icons/joystick.png"]
@@ -437,7 +438,12 @@ class MovieDirectorGUI(ctk.CTk):
     def zoom_value(self, value):
         time.sleep(0.05)
         print("Zoom: ", value)
-        self.sendMessage(f"zoom:{value}")
+        # self.zoomstate = "+"
+        if value < self.zoomstate:
+            state = "-"
+        elif value > self.zoomstate:
+            state = "+"
+        self.sendMessage(f"zoom:{value}:{state}")
         
 
     def on_move(self, direction):
