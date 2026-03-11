@@ -123,25 +123,25 @@ def zoom(value, state):
    global picam2
    global size
    global full_res
-   # test state
-   '''
-   if state is 1, camera zooms in
-   else if -1, camera zooms out
-   '''
-   sign = 1
-   if state == "-": sign = -1
-   # elif state == "+": sign = 1
-   
-   # size = picam2.capture_metadata()['ScalerCrop'][2:]
 
-   # full_res = picam2.camera_properties['PixelArraySize']
-   
-   # This syncs us to the arrival of a new camera frame:
+   # sync up the arrival of the new frame
    picam2.capture_metadata()
 
-   size = [int(s * ((100.0 - int(float(value))) / 100.0)) for s in size]
+   zoom_factor = (100.0 - float(value)) / 100.0
+
+   if state == "-":   # zoom out
+      zoom_factor = 1 / zoom_factor
+
+   size = [int(s * zoom_factor) for s in size]
+
+   # clamp so it never exceeds full resolution
+   size = [min(s, r) for s, r in zip(size, full_res)]
+
    offset = [(r - s) // 2 for r, s in zip(full_res, size)]
-   picam2.set_controls({"ScalerCrop": offset + size * (sign)})
+
+   picam2.set_controls({
+      "ScalerCrop": offset + size
+   })
    
 
 def VideoStream():
