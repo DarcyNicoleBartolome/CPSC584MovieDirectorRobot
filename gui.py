@@ -39,7 +39,7 @@ class MovieDirectorGUI(ctk.CTk):
         
         # # For audio streaming
         # # Test Director Speaker
-        # self.setSpeaker = False
+        self.setSpeaker = False
         self.p = pyaudio.PyAudio()
         self.stream = self.p.open(format=FORMAT,
                         channels=CHANNELS,
