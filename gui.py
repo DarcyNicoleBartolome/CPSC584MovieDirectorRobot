@@ -7,6 +7,14 @@ import os
 
 # Attempt socket programming
 import socket
+import pyaudio
+
+CHUNK = 1024 * 4
+FORMAT = pyaudio.paInt16
+CHANNELS = 1
+RATE = 44100
+RECORD_SECONDS = 3
+WAVE_OUTPUT_FILENAME = "output.wav"
 
 # !! Change into the Robot's IP when testing with the group5 SD card
 SERVER_HOST = "172.17.10.158" # Raspy's with CPSC584 wifi
@@ -25,8 +33,14 @@ class MovieDirectorGUI(ctk.CTk):
         self.geometry("1000x650")
         self.minsize(850, 560)
 
+        # For video streaming
         self.stream_url = "http://172.17.10.218:8080/stream.mjpg"
         project_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        # # For audio streaming
+        # # Test Director Speaker
+        # self.setSpeaker = False
+        # self.p = pyaudio.PyAudio()
 
         # Layout
         self.grid_rowconfigure(0, weight=1)
@@ -41,8 +55,6 @@ class MovieDirectorGUI(ctk.CTk):
         
         # Test Zoom appear
         self.showZoom = False
-        # Test Director Speaker
-        self.setSpeaker = False
         
         # Left side icons: camera, focus, zoom
         left_icons = ["icons/camera.png", "icons/focus.png", "icons/zoom.png", "icons/joystick.png"]
@@ -161,12 +173,12 @@ class MovieDirectorGUI(ctk.CTk):
                 width=44,
                 height=44,
                 corner_radius=14,
-                command=lambda a=action: self.on_move(client_socket,a),
+                command=lambda a=action: self.on_move(a),
             ).grid(row=r, column=c, padx=6, pady=6, sticky="nsew")
 
         dpad_btn("▲", "up", 0, 1)
         dpad_btn("◀", "left", 1, 0)
-        dpad_btn("●", "stop", 1, 1)
+        dpad_btn("●", "stand", 1, 1)
         dpad_btn("▶", "right", 1, 2)
         dpad_btn("▼", "down", 2, 1)
 
@@ -300,7 +312,7 @@ class MovieDirectorGUI(ctk.CTk):
                 width=45,
                 height=45,
                 corner_radius=14,
-                
+                command=lambda: self.directorSpeaker()
             )
             speaker.pack(side="left", padx=6)
         except Exception as e:
@@ -353,9 +365,18 @@ class MovieDirectorGUI(ctk.CTk):
         else:
             print("Stream opened:", self.stream_url)
             threading.Thread(target=self._reader_loop, daemon=True).start()
-
+            
         self.protocol("WM_DELETE_WINDOW", self.on_close)
         self.after(33, self._render_latest_frame)
+        
+        # --- Director Speaker stream state --- 
+        # self._audioStop = threading.Event()  
+        # # self.stream = None
+        # if self.setSpeaker:
+        #     print("Audio Capture open")
+        #     self.audio_thread = threading.Thread(target=self.playAudio, daemon=True)
+        #     self.audio_thread.start()
+        # else 
 
     def _reader_loop(self):
         """Read frames in background so GUI never blocks."""
@@ -413,22 +434,54 @@ class MovieDirectorGUI(ctk.CTk):
     def on_right_action(self, idx):
         print("Right button", idx)
 
-    def on_move(self, direction, client_socket):
+    def on_move(self, direction):
         print("Move:", direction)
-        self.sendMessage(client_socket, direction)
+        self.sendMessage(direction)
         
-    def slider_event(self, value):
-        print(value)
+    # def playAudio(self):
+    #     if self.setSpeaker and self._audioStop.is_set():
+    #         self.stream = self.p.open(format=FORMAT,
+    #                 channels=CHANNELS,
+    #                 rate=RATE,
+    #                 input=True,
+    #                 frames_per_buffer=CHUNK)
+    #         while True:
+    #             try:
+    #                 data = self.stream.read(CHUNK)
+    #                 self.client_socket.sendall(data)
+    #             except Exception as e: # If other Exception error detected, print out the error and close the chatroom window after half a second
+    #                 print(f"Error found while sending the message: {e}")
+    #                 # print(f"Leaving the chatroom...")
+    #                 # root.after(500, root.quit)
+        
+    def directorSpeaker(self):
+        self.setSpeaker = not self.setSpeaker
+        
+        # if self.setSpeaker == False:
+        #     self.audio_on_close()
+            
+    # def audio_on_close(self):
+    #     self._audioStop.set()
+    #     self.audio_thread.join()
+    #     # self.stream.close()
+        
+    #     # Stop audio streaming
+    #     try:
+    #         self.stream.close()
+    #     except Exception as e:
+    #         print(f"Error found while closing the audio: {e}")
+            
+            
         
     # Handles when user sends message of their input to the chatroom
-    def sendMessage(self, client_socket, message):
+    def sendMessage(self, message):
         # If user tries to send an empty message, nothing happens and return
         if not message:
             return
         
         try:
             # if the client did not send a command, send it to the server as a message the user want to broadcast to all users in the chatroom
-            client_socket.sendall(message.encode("utf-8"))
+            self.client_socket.sendall(message.encode("utf-8"))
             
         except Exception as e: # If other Exception error detected, print out the error and close the chatroom window after half a second
             print(f"Error found while sending the message: {e}")

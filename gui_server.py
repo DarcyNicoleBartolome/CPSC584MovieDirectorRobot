@@ -9,6 +9,9 @@ import readchar
 
 # Attempt socket programming
 import socket
+import pyaudio
+
+import subprocess
 
 # !! Change into the Robot's IP when testing with the group5 SD card
 HOST = "172.17.10.158" # Raspy's with CPSC584 wifi
@@ -34,6 +37,20 @@ Z_UP = -30
 Z_WAVE = 60
 Z_TURN = -40
 Z_PUSH = -76
+
+# Audio
+
+# p = pyaudio.PyAudio()
+# CHUNK = 1024 * 4
+# FORMAT = pyaudio.paInt16
+# CHANNELS = 1
+# RATE = 44100
+
+# stream = p.open(format=FORMAT,
+#                 channels=CHANNELS,
+#                 rate=RATE,
+#                 output=True,
+#                 frames_per_buffer=CHUNK)
 
 def stand(speed, current): # make the robot stand up
    test = [i for i in current]
@@ -227,6 +244,10 @@ def get_local_ip(self):
       return "Unknown"
    
 def start_server():
+   # Run the mjpeg.py code to start video streaming
+   # running other file using run()
+   subprocess.run(["python", "mjpeg.py"])
+   
    """ Start the server and listen for incoming connections. """
    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
       server_socket.bind((HOST, PORT))
@@ -316,7 +337,7 @@ def process_request(request_data, client_socket, client_address):
    elif 'down' == request_data: # move sideway right
       moveDown(speed, current_pose)
       
-   elif 'p' == request_data: # move sideway right
+   elif 'stand' == request_data: # stand position
       crawler.do_step('stand', speed)
       
    elif '+' == request_data: # move sideway right
@@ -325,7 +346,21 @@ def process_request(request_data, client_socket, client_address):
    elif '-' == request_data: # move sideway right
       speed-=5
       
+   # else: # Assume it's audio
+   #    while data != "":
+   #       try:
+   #             data = client_socket.recv(4096)
+   #             stream.write(data)
+   #       except socket.error:
+   #             print("Client Disconnected")
+   #             break
+      
 
 # If runs, the server starts
 if __name__ == '__main__':
     start_server()
+    
+# after main close stop all audio processes
+# stream.stop_stream()
+# stream.close()
+# p.terminate()
