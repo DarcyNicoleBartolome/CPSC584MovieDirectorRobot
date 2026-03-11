@@ -55,7 +55,7 @@ class MovieDirectorGUI(ctk.CTk):
         
         # Display Zoom state
         self.showZoom = False
-        self.current_zoomvalue = 50/2
+        self.current_zoomvalue = 1
         
         # Left side icons: camera, focus, zoom
         left_icons = ["icons/camera.png", "icons/focus.png", "icons/zoom.png", "icons/joystick.png"]
@@ -152,11 +152,12 @@ class MovieDirectorGUI(ctk.CTk):
         self.zoom_slider = ctk.CTkSlider(
                 self.center,
                 from_=1, 
-                to=20,
+                to=8,
                 # fg_color=,
-                # number_of_steps=100,
+                number_of_steps=100,
                 command=lambda value=i: self.zoom_value(value)
             )
+        self.zoom_slider.set(self.current_zoomvalue)
 
         # ---- Navigation (D-pad) ----
         self.dpad = ctk.CTkFrame(self.bottom, corner_radius=16)
@@ -424,12 +425,13 @@ class MovieDirectorGUI(ctk.CTk):
         if idx == 2: # Zoom button is clicked
             self.showZoom = not self.showZoom
             if self.showZoom:
-                self.zoom_slider.grid(row=1, column=0, columnspan=3, padx=18, pady=(10, 18), sticky="ew")
+                # self.zoom_slider.grid(row=1, column=0, columnspan=3, padx=18, pady=(10, 18), sticky="ew")
+                self.zoom_slider.place(relx=0.5, rely=0.9, relwidth=0.7, relheight=0.06, anchor='center')
                 print("open slider")
             else:
                 print("close slider")
                 # self.zoom_slider.configure(state="disabled")
-                self.zoom_slider.grid_forget()
+                self.zoom_slider.place_forget()
             
 
     def on_right_action(self, idx):
