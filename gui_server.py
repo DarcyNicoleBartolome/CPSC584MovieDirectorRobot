@@ -455,7 +455,7 @@ def process_request(request_data, client_socket, client_address):
          speed-=5
       else: return # Do nothing
       
-   if request_data[0] == "zoom":
+   if message[0] == "zoom":
       zoom(message[1])
       
    # else: # Assume it's audio
