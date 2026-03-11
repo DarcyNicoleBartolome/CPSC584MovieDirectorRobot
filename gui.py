@@ -151,7 +151,7 @@ class MovieDirectorGUI(ctk.CTk):
         self.zoom_slider = ctk.CTkSlider(
                 self.center,
                 from_=0, 
-                to=100,
+                to=50,
                 # fg_color=,
                 # number_of_steps=100,
                 command=lambda value=i: self.zoom_value(value)
