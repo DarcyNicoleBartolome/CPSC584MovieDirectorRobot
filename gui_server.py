@@ -128,6 +128,9 @@ def zoom(value, state):
    if state is 1, camera zooms in
    else if -1, camera zooms out
    '''
+   sign = 1
+   if state == "-": sign = -1
+   # elif state == "+": sign = 1
    
    # size = picam2.capture_metadata()['ScalerCrop'][2:]
 
@@ -138,7 +141,7 @@ def zoom(value, state):
 
    size = [int(s * ((100.0 - int(float(value))) / 100.0)) for s in size]
    offset = [(r - s) // 2 for r, s in zip(full_res, size)]
-   picam2.set_controls({"ScalerCrop": offset + size * (state)})
+   picam2.set_controls({"ScalerCrop": offset + size * (sign)})
    
 
 def VideoStream():
