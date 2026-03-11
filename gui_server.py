@@ -246,7 +246,8 @@ def get_local_ip(self):
 def start_server():
    # Run the mjpeg.py code to start video streaming
    # running other file using run()
-   subprocess.run(["python", "mjpeg.py"])
+   # subprocess.run(["python", "mjpeg.py"])
+   os.system("python mjpeg.py")
    
    """ Start the server and listen for incoming connections. """
    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
