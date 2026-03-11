@@ -435,7 +435,7 @@ class MovieDirectorGUI(ctk.CTk):
         print("Right button", idx)
         
     def zoom_value(self, value):
-        time.sleep(0.5)
+        time.sleep(0.05)
         print("Zoom: ", value)
         self.sendMessage(f"zoom:{value}")
         

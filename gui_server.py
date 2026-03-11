@@ -62,6 +62,10 @@ Z_PUSH = -76
 
 # Initialize picamera
 picam2 = Picamera2()
+size = None
+full_res = None
+# size = picam2.capture_metadata()['ScalerCrop'][2:]
+# full_res = picam2.camera_properties['PixelArraySize']
 
 #region ######### Video streaming #########
 class StreamingOutput(io.BufferedIOBase):
@@ -117,15 +121,17 @@ class Handler(BaseHTTPRequestHandler):
          
 def zoom(value):
    global picam2
+   global size
+   global full_res
    # test state
    '''
    if state is 1, camera zooms in
    else if -1, camera zooms out
    '''
    
-   size = picam2.capture_metadata()['ScalerCrop'][2:]
+   # size = picam2.capture_metadata()['ScalerCrop'][2:]
 
-   full_res = picam2.camera_properties['PixelArraySize']
+   # full_res = picam2.camera_properties['PixelArraySize']
    
    # This syncs us to the arrival of a new camera frame:
    picam2.capture_metadata()
@@ -137,11 +143,16 @@ def zoom(value):
 
 def VideoStream():
    global picam2
+   global size
+   global full_res
    #  picam2 = Picamera2()
    
    # You can change size/fps later
    picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))
    picam2.start_recording(MJPEGEncoder(), FileOutput(output))
+   
+   size = picam2.capture_metadata()['ScalerCrop'][2:]
+   full_res = picam2.camera_properties['PixelArraySize']
 
    server = HTTPServer(("0.0.0.0", 8080), Handler)
    print("MJPEG stream:")
