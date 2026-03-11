@@ -47,17 +47,17 @@ Z_PUSH = -76
 
 # Audio
 
-# p = pyaudio.PyAudio()
-# CHUNK = 1024 * 4
-# FORMAT = pyaudio.paInt16
-# CHANNELS = 1
-# RATE = 44100
+p = pyaudio.PyAudio()
+CHUNK = 1024 * 4
+FORMAT = pyaudio.paInt16
+CHANNELS = 1
+RATE = 44100
 
-# stream = p.open(format=FORMAT,
-#                 channels=CHANNELS,
-#                 rate=RATE,
-#                 output=True,
-#                 frames_per_buffer=CHUNK)
+stream = p.open(format=FORMAT,
+                channels=CHANNELS,
+                rate=RATE,
+                output=True,
+                frames_per_buffer=CHUNK)
 
 
 # Initialize picamera
@@ -349,7 +349,7 @@ def lookDown(speed, current):
 #endregion ######### Crawler Movement #########
 
 #region ######### Socket Programming / Start running the server #########
-def get_local_ip(self):
+def get_local_ip():
    """Get local IP address"""
    try:
       s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -374,6 +374,8 @@ def start_server():
       
       # threading.Thread(target=VideoStream, args=(client_socket, client_address)).start()
       threading.Thread(target=VideoStream).start()
+      # threading.Thread(target=AudioStream).start()
+      
       while True:
             try:
                # Accept new client connections and start a thread for each client
@@ -399,7 +401,8 @@ def handle_client(client_socket, client_address):
    try:
       while True:
          # Receive data from the client
-         request_data = client_socket.recv(1024).decode("utf-8", errors="replace")
+         # request_data = client_socket.recv(1024).decode("utf-8", errors="replace")
+         request_data = client_socket.recv(1024)
          if not request_data:  # Client has closed the connection
             break
             
@@ -423,10 +426,12 @@ def handle_client(client_socket, client_address):
          # logging.info(f"Closed connection with {client_address}")
          print(f"Closed connection with {client_address}")         
             
-def process_request(request_data, client_socket, client_address):
+def process_request(data, client_socket, client_address):
    """ Process the client's request and generate a response. """
    global speed
    current_pose = crawler.current_step_all_leg_value()
+   
+   request_data = data.decode("utf-8", errors="replace")
    if not request_data or request_data == "":
       client_socket.sendall("".encode("utf-8"))
       print(f"the request data is empty")
@@ -473,16 +478,27 @@ def process_request(request_data, client_socket, client_address):
       print("Zoom On") # Debug print
       zoom(message[1], message[2])
       
-   # else: # Assume it's audio
-   #    while data != "":
-   #       try:
-   #             data = client_socket.recv(4096)
-   #             stream.write(data)
-   #       except socket.error:
-   #             print("Client Disconnected")
-   #             break
+   else: # Assume it's audio
+      while data != "":
+         try:
+               data = client_socket.recv(4096)
+               stream.write(data)
+         except socket.error:
+               print("Client Disconnected")
+               break
       
 #endregion ######### Socket Programming / Start running the server #########
+
+#region ###### Audio Streaming #######
+# def AudioStream(data, client_socket):
+#    while data != "":
+#       try:
+#             data = client_socket.recv(4096)
+#             stream.write(data)
+#       except socket.error:
+#             print("Client Disconnected")
+#             break
+   
 
 # If runs, the server starts
 if __name__ == '__main__':

@@ -40,7 +40,12 @@ class MovieDirectorGUI(ctk.CTk):
         # # For audio streaming
         # # Test Director Speaker
         # self.setSpeaker = False
-        # self.p = pyaudio.PyAudio()
+        self.p = pyaudio.PyAudio()
+        self.stream = self.p.open(format=FORMAT,
+                        channels=CHANNELS,
+                        rate=RATE,
+                        input=True,
+                        frames_per_buffer=CHUNK)
 
         # Layout
         self.grid_rowconfigure(0, weight=1)
@@ -372,13 +377,9 @@ class MovieDirectorGUI(ctk.CTk):
         self.after(33, self._render_latest_frame)
         
         # --- Director Speaker stream state --- 
-        # self._audioStop = threading.Event()  
-        # # self.stream = None
-        # if self.setSpeaker:
-        #     print("Audio Capture open")
-        #     self.audio_thread = threading.Thread(target=self.playAudio, daemon=True)
-        #     self.audio_thread.start()
-        # else 
+        self.send_audio_event = threading.Event()
+        self.send_audio_event.set()  # audio enabled
+        threading.Thread(target=self.audio_sender, daemon=True).start()
 
     def _reader_loop(self):
         """Read frames in background so GUI never blocks."""
@@ -451,41 +452,28 @@ class MovieDirectorGUI(ctk.CTk):
         print("Move:", direction)
         self.sendMessage(f"move:{direction}")
         
-    # def playAudio(self):
-    #     if self.setSpeaker and self._audioStop.is_set():
-    #         self.stream = self.p.open(format=FORMAT,
-    #                 channels=CHANNELS,
-    #                 rate=RATE,
-    #                 input=True,
-    #                 frames_per_buffer=CHUNK)
-    #         while True:
-    #             try:
-    #                 data = self.stream.read(CHUNK)
-    #                 self.client_socket.sendall(data)
-    #             except Exception as e: # If other Exception error detected, print out the error and close the chatroom window after half a second
-    #                 print(f"Error found while sending the message: {e}")
-    #                 # print(f"Leaving the chatroom...")
-    #                 # root.after(500, root.quit)
-        
     def directorSpeaker(self):
         self.setSpeaker = not self.setSpeaker
-        print(f"set speaker: {self.setSpeaker}")
+        print(f"set speaker: {self.setSpeaker}") 
         
-        # if self.setSpeaker == False:
-        #     self.audio_on_close()
-            
-    # def audio_on_close(self):
-    #     self._audioStop.set()
-    #     self.audio_thread.join()
-    #     # self.stream.close()
+        if self.send_audio_event.is_set():
+            self.send_audio_event.clear()
+        else:
+            self.send_audio_event.set()
         
-    #     # Stop audio streaming
-    #     try:
-    #         self.stream.close()
-    #     except Exception as e:
-    #         print(f"Error found while closing the audio: {e}")
-            
-            
+    # def toggle_audio():
+    #     if send_audio_event.is_set():
+    #         send_audio_event.clear()
+    #     else:
+    #         send_audio_event.set() 
+        
+    def audio_sender(self, data, client_socket):
+        while True:
+            if self.send_audio_event.is_set():
+                data = self.stream.read(CHUNK)
+                client_socket.sendall(data)
+            else:
+                time.sleep(0.01) 
         
     # Handles when user sends message of their input to the chatroom
     def sendMessage(self, message):
