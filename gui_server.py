@@ -444,37 +444,30 @@ def process_request(data, client_socket, client_address):
    if message[0] == "move":
       if 'left' == message[1]: # move sideway left
          move_sideLeft(speed, current_pose)
-      elif 'q' == message: # move sideway left
+      elif 'rotate left' == message: # rotate left
          move_rotateLeft(speed, current_pose)
-         
-      elif 'e' == message[1]: # move sideway right
+      elif 'rotate right' == message[1]: # rotate right
          move_rotateRight(speed, current_pose)
-         
       elif 'right' == message[1]: # move sideway right
          move_sideRight(speed, current_pose)
-         
-      elif 'r' == message[1]: # move sideway right
+      elif 'look up' == message[1]: # look up
          lookUp(speed, current_pose)
-      elif 'f' == message[1]: # move sideway right
+      elif 'look down' == message[1]: # look down
          lookDown(speed, current_pose)
-         
-      elif 'up' == message[1]: # move sideway right
+      elif 'up' == message[1]: # move forward
          moveUp(speed, current_pose)
-         
-      elif 'down' == message[1]: # move sideway right
+      elif 'down' == message[1]: # move backward
          moveDown(speed, current_pose)
-         
       elif 'stand' == message[1]: # stand position
          crawler.do_step('stand', speed)
-         
-      elif '+' == message[1]: # move sideway right
+      elif '+' == message[1]: # increase speed
          speed+=5
          print(speed)
-      elif '-' == message[1]: # move sideway right
+      elif '-' == message[1]: # decrease
          speed-=5
       else: return # Do nothing
       
-   elif message[0] == "zoom":
+   elif message[0] == "zoom": # Set the function of the camera based on the value
       print("Zoom On") # Debug print
       zoom(message[1], message[2])
       

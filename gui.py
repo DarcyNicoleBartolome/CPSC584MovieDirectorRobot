@@ -18,6 +18,7 @@ WAVE_OUTPUT_FILENAME = "output.wav"
 
 # !! Change into the Robot's IP when testing with the group5 SD card
 SERVER_HOST = "172.17.10.218" # Raspy's with CPSC584 wifi
+# SERVER_HOST = "127.0.0.1" # localhost
 SERVER_PORT = 5001
 
 ctk.set_appearance_mode("dark")
@@ -63,7 +64,7 @@ class MovieDirectorGUI(ctk.CTk):
         self.current_zoomvalue = 1
         
         # Left side icons: camera, focus, zoom
-        left_icons = ["icons/camera.png", "icons/focus.png", "icons/zoom.png", "icons/joystick.png"]
+        left_icons = ["icons/camera.png", "icons/focus2.png", "icons/zoom.png", "icons/joystick.png", "icons/lock.png"]
         left_photos = []
         
         for i, icon in enumerate(left_icons):
@@ -101,7 +102,7 @@ class MovieDirectorGUI(ctk.CTk):
         self.right.grid(row=0, column=2, padx=(10, 18), pady=(18, 10), sticky="ns")
         
         # Right side icons: goldenratio, and others to be added
-        right_icons = ["icons/goldenratio.png", "icons/icon2.png", "icons/icon3.png"]
+        right_icons = ["icons/goldenratio2.png", "icons/icon2.png", "icons/icon3.png", "icons/rule-of-thirds.png", "icons/center.png"]
         right_photos = []
         
         for i, icon in enumerate(right_icons):
@@ -167,11 +168,13 @@ class MovieDirectorGUI(ctk.CTk):
         # ---- Navigation (D-pad) ----
         self.dpad = ctk.CTkFrame(self.bottom, corner_radius=16)
         self.dpad.grid(row=0, column=0, padx=12, pady=12, sticky="w")
+        
 
         for r in range(3):
             self.dpad.grid_rowconfigure(r, weight=1)
         for c in range(3):
             self.dpad.grid_columnconfigure(c, weight=1)
+            
 
         def dpad_btn(text, action, r, c):
             ctk.CTkButton(
@@ -182,12 +185,69 @@ class MovieDirectorGUI(ctk.CTk):
                 corner_radius=14,
                 command=lambda a=action: self.on_move(a),
             ).grid(row=r, column=c, padx=6, pady=6, sticky="nsew")
+        
+         
+        try:
+            rotate_left_icon_path = os.path.join(project_dir, "icons/rotateLeft.png")
+            rotate_left_icon_img = Image.open(rotate_left_icon_path)
+            rotate_left_icon_img = rotate_left_icon_img.resize((24, 24), Image.Resampling.LANCZOS)
+            rotate_left_icon_photo = ImageTk.PhotoImage(rotate_left_icon_img)
+            
+            ctk.CTkButton(
+                self.dpad,
+                text="",
+                image=rotate_left_icon_photo,
+                width=44,
+                height=44,
+                corner_radius=14,
+                command=lambda: self.on_move("rotate left"),
+            ).grid(row=0, column=0, padx=6, pady=6, sticky="nsew")
+            
+        except Exception as e:
+            print(f"Error loading {icon}: {e}")
+            ctk.CTkButton(
+                self.dpad, 
+                text="",
+                width=44, 
+                height=44, 
+                corner_radius=14,
+                command=lambda: self.on_move("rotate left"),
+            ).grid(row=0, column=0, padx=6, pady=6, sticky="nsew")
+            
+        try:
+            rotate_right_icon_path = os.path.join(project_dir, "icons/rotateRight.png")
+            rotate_right_icon_img = Image.open(rotate_right_icon_path)
+            rotate_right_icon_img = rotate_right_icon_img.resize((24, 24), Image.Resampling.LANCZOS)
+            rotate_right_icon_photo = ImageTk.PhotoImage(rotate_right_icon_img)
+            
+            ctk.CTkButton(
+                self.dpad,
+                text="",
+                image=rotate_right_icon_photo,
+                width=44,
+                height=44,
+                corner_radius=14,
+                command=lambda: self.on_move("rotate right"),
+            ).grid(row=0, column=2, padx=6, pady=6, sticky="nsew")
+            
+        except Exception as e:
+            print(f"Error loading {icon}: {e}")
+            ctk.CTkButton(
+                self.dpad, 
+                text="",
+                width=44, 
+                height=44, 
+                corner_radius=14,
+                command=lambda: self.on_move("rotate right"),
+            ).grid(row=0, column=2, padx=6, pady=6, sticky="nsew")
 
         dpad_btn("▲", "up", 0, 1)
         dpad_btn("◀", "left", 1, 0)
         dpad_btn("●", "stand", 1, 1)
         dpad_btn("▶", "right", 1, 2)
         dpad_btn("▼", "down", 2, 1)
+        dpad_btn("-", "-", 2, 0)
+        dpad_btn("+", "+", 2, 2)
 
         # ---- Record Controls (middle) ----
         self.controls = ctk.CTkFrame(self.bottom, corner_radius=16)
