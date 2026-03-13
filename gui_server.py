@@ -402,7 +402,8 @@ def handle_client(client_socket, client_address):
       while True:
          # Receive data from the client
          # request_data = client_socket.recv(1024).decode("utf-8", errors="replace")
-         request_data = client_socket.recv(1024)
+         # request_data = client_socket.recv(1024)
+         request_data = client_socket.recv(CHUNK)
          if not request_data:  # Client has closed the connection
             break
             
