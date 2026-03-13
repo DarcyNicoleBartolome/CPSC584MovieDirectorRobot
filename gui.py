@@ -534,7 +534,7 @@ class MovieDirectorGUI(ctk.CTk):
         print("Audio thread started")
 
         while True:
-            data = self.stream.read(CHUNK, exception_on_overflow=False)
+            data = self.stream.read(CHUNK-4, exception_on_overflow=False) # Attempt removing 4 bytes for AUD:
 
             if self.send_audio_event.is_set():
                 try:
