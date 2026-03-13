@@ -48,7 +48,7 @@ Z_PUSH = -76
 # Audio
 
 p = pyaudio.PyAudio()
-CHUNK = 1024 * 4
+CHUNK = (1024 * 4) - 4 # -4 for AUD:
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
 RATE = 44100
