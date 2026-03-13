@@ -21,6 +21,10 @@ SERVER_HOST = "172.17.10.218" # Raspy's with CPSC584 wifi
 # SERVER_HOST = "127.0.0.1" # localhost
 SERVER_PORT = 5001
 
+
+# !! TODO LOOK AT CHUNKS IN AUDIO AND SUCH!!!!
+
+
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
@@ -47,6 +51,9 @@ class MovieDirectorGUI(ctk.CTk):
                         rate=RATE,
                         input=True,
                         frames_per_buffer=CHUNK)
+        
+        # For Autofocus
+        self.setAfManual = False
 
         # Layout
         self.grid_rowconfigure(0, weight=1)
@@ -64,7 +71,7 @@ class MovieDirectorGUI(ctk.CTk):
         self.current_zoomvalue = 1
         
         # Left side icons: camera, focus, zoom
-        left_icons = ["icons/camera.png", "icons/focus2.png", "icons/zoom.png", "icons/joystick.png", "icons/lock.png"]
+        left_icons = ["icons/camera.png", "icons/focus2.png", "icons/zoom.png", "icons/autofocus.png" "icons/joystick.png", "icons/lock.png"]
         left_photos = []
         
         for i, icon in enumerate(left_icons):
@@ -164,6 +171,17 @@ class MovieDirectorGUI(ctk.CTk):
                 command=lambda value=i: self.zoom_value(value)
             )
         self.zoom_slider.set(self.current_zoomvalue)
+        
+        self.AF_slider = ctk.CTkSlider(
+                self.center,
+                from_=0,
+                # from_=0.55, to=2.75, digits = 3, resolution = 0.01  #!! Find a way to may it float
+                to=10,
+                # fg_color=,
+                # number_of_steps=10,
+                command=lambda value=i: self.AfManual(value)
+            )
+        self.AF_slider.set(0)
 
         # ---- Navigation (D-pad) ----
         self.dpad = ctk.CTkFrame(self.bottom, corner_radius=16)
@@ -488,12 +506,33 @@ class MovieDirectorGUI(ctk.CTk):
             if self.showZoom:
                 # self.zoom_slider.grid(row=1, column=0, columnspan=3, padx=18, pady=(10, 18), sticky="ew")
                 self.zoom_slider.place(relx=0.5, rely=0.9, relwidth=0.7, relheight=0.06, anchor='center')
-                print("open slider")
+                print("open zoom slider")
             else:
-                print("close slider")
+                print("close zoom slider")
                 # self.zoom_slider.configure(state="disabled")
                 self.zoom_slider.place_forget()
             
+                
+        if idx == 3: # If Autofocus is clicked
+            # Right now test the manual len position
+            self.setAfManual = not self.setAfManual
+            if self.setAfManual:
+                print("open autofocus slider")
+                self.AF_slider.place(relx=0.5, rely=0.9, relwidth=0.7, relheight=0.06, anchor='center')
+            else:
+                print("close autofocus slider")
+                # self.zoom_slider.configure(state="disabled")
+                self.AF_slider.place_forget()
+            
+    def AfManual(self, value):
+        time.sleep(0.05)
+        print("Lens position: ", value)
+        # state = "+"
+        # if value < self.current_zoomvalue:
+        #     state = "-"
+        # self.current_zoomvalue = value
+        self.sendMessage(f"autofocus:{value}")
+        
 
     def on_right_action(self, idx):
         print("Right button", idx)

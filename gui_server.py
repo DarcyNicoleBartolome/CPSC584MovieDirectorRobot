@@ -6,7 +6,7 @@ import os
 from picrawler import Picrawler
 from time import sleep
 import readchar
-
+from libcamera import controls
 # Attempt socket programming
 import socket
 import pyaudio
@@ -15,10 +15,13 @@ import pyaudio
 from picamera2 import Picamera2
 from picamera2.encoders import MJPEGEncoder
 from picamera2.outputs import FileOutput
+
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import io
 
 import subprocess
+
+# !! TODO LOOK AT CHUNKS IN AUDIO AND SUCH!!!!
 
 # !! Change into the Robot's IP when testing with the group5 SD card
 HOST = "172.17.10.218" # Raspy's with CPSC584 wifi
@@ -118,6 +121,11 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(b"\r\n")
         except Exception:
             pass
+         
+def manual_autofocus(value):
+   global picam2
+   picam2.set_controls({"AfMode": controls.AfModeEnum.Manual, "LensPosition": float(value)})
+   
          
 def zoom(value, state):
    global picam2
@@ -467,6 +475,10 @@ def process_request(data, client_socket, client_address):
       elif '-' == message[1]: # decrease
          speed-=5
       else: return # Do nothing
+      
+   elif message[0] == "autofocus":
+      print("autofocus On")
+      manual_autofocus(message[1])
       
    elif message[0] == "zoom": # Set the function of the camera based on the value
       print("Zoom On") # Debug print
