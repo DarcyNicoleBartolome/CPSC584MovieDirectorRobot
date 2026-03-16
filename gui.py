@@ -593,7 +593,8 @@ class MovieDirectorGUI(ctk.CTk):
 
             if self.send_audio_event.is_set():
                 try:
-                    self.client_socket.sendall(b"AUD:" + data)
+                    # self.client_socket.sendall(b"AUD:" + data)
+                    self.client_socket.sendall(data)
                 except Exception as e:
                     print("Audio send error:", e)
                     break
