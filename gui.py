@@ -71,7 +71,7 @@ class MovieDirectorGUI(ctk.CTk):
         self.current_zoomvalue = 1
         
         # Left side icons: camera, focus, zoom
-        left_icons = ["icons/camera.png", "icons/focus2.png", "icons/zoom.png", "icons/autofocus.png" "icons/joystick.png", "icons/lock.png"]
+        left_icons = ["icons/camera.png", "icons/focus2.png", "icons/zoom.png", "icons/autofocus.png", "icons/colorFilter.png", "icons/joystick.png", "icons/lock.png"]
         left_photos = []
         
         for i, icon in enumerate(left_icons):
@@ -182,6 +182,22 @@ class MovieDirectorGUI(ctk.CTk):
                 command=lambda value=i: self.AfManual(value)
             )
         self.AF_slider.set(0)
+        
+        # Add color filters
+        self.colorFilterControls = ctk.CTkFrame(self.center, corner_radius=16)
+        
+        self.colorFilterControls.place(relx=250, rely=20)
+        text_filters = ["RGGB", "GRBG", "GBRG", "BGGR", "B/W"]
+        ctk.CTkButton(
+                    self.colorFilterControls, 
+                    text="RGGB",
+                    width=52, 
+                    height=52, 
+                    corner_radius=14,
+                    command=lambda idx=i: self.on_right_action(idx),
+                ).place(relx=2, rely=2)
+        # for i, text in text_filters:
+        
 
         # ---- Navigation (D-pad) ----
         self.dpad = ctk.CTkFrame(self.bottom, corner_radius=16)
