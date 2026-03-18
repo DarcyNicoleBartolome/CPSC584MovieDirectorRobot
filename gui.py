@@ -17,8 +17,8 @@ RECORD_SECONDS = 3
 WAVE_OUTPUT_FILENAME = "output.wav"
 
 # !! Change into the Robot's IP when testing with the group5 SD card
-SERVER_HOST = "172.17.10.218" # Raspy's with CPSC584 wifi
-# SERVER_HOST = "127.0.0.1" # localhost
+# SERVER_HOST = "172.17.10.218" # Raspy's with CPSC584 wifi
+SERVER_HOST = "127.0.0.1" # localhost
 SERVER_PORT = 5001
 
 
@@ -37,6 +37,9 @@ class MovieDirectorGUI(ctk.CTk):
         self.title("Movie Director Miniature")
         self.geometry("1000x650")
         self.minsize(850, 560)
+        
+        # Speed of the robot
+        self.speed = 90
 
         # For video streaming
         self.stream_url = "http://172.17.10.218:8080/stream.mjpg"
@@ -219,7 +222,6 @@ class MovieDirectorGUI(ctk.CTk):
                 corner_radius=14,
                 command=lambda a=action: self.on_move(a),
             ).grid(row=r, column=c, padx=6, pady=6, sticky="nsew")
-        
          
         try:
             rotate_left_icon_path = os.path.join(project_dir, "icons/rotateLeft.png")
@@ -452,6 +454,14 @@ class MovieDirectorGUI(ctk.CTk):
                 height=52,
                 corner_radius=14,
             ).pack(side="left", padx=6)
+            
+            
+        # !! ROBOT SPEED CHANGE POSITION LATER
+        ctk.CTkLabel(
+                self.utility,
+                text=str(self.speed),
+                font=("Arial", 32)
+            ).pack(side="left", padx=6)  
 
         # ---- OpenCV stream state ----
         self._stop = threading.Event()
