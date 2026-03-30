@@ -5,9 +5,50 @@ import threading
 import time
 import os
 
+import mediapipe
+import cv2
+import numpy
+
 # Attempt socket programming
 import socket
 import pyaudio
+
+import time
+import cv2
+import numpy as np
+import mediapipe as mp
+# for visualizing results
+# from mediapipe.framework.formats import landmark_pb2
+
+# Test hollistic tracking
+# import mediapipe as mp
+import numpy as np
+from mediapipe.tasks.python.vision import drawing_utils
+from mediapipe.tasks.python.vision import drawing_styles
+from mediapipe.tasks.python import vision
+
+# STEP 1: Import the necessary modules.
+import mediapipe as mp
+from mediapipe.tasks import python
+from mediapipe.tasks.python import vision
+
+
+def draw_landmarks_on_image(rgb_image, detection_result):
+  pose_landmarks_list = detection_result.pose_landmarks
+  annotated_image = np.copy(rgb_image)
+
+  pose_landmark_style = drawing_styles.get_default_pose_landmarks_style()
+  pose_connection_style = drawing_utils.DrawingSpec(color=(0, 255, 0), thickness=2)
+
+  for pose_landmarks in pose_landmarks_list:
+    drawing_utils.draw_landmarks(
+        image=annotated_image,
+        landmark_list=pose_landmarks,
+        connections=vision.PoseLandmarksConnections.POSE_LANDMARKS,
+        landmark_drawing_spec=pose_landmark_style,
+        connection_drawing_spec=pose_connection_style)
+
+  return annotated_image
 
 CHUNK = 1024 * 4
 FORMAT = pyaudio.paInt16
@@ -17,8 +58,8 @@ RECORD_SECONDS = 3
 WAVE_OUTPUT_FILENAME = "output.wav"
 
 # !! Change into the Robot's IP when testing with the group5 SD card
-# SERVER_HOST = "172.17.10.218" # Raspy's with CPSC584 wifi
-SERVER_HOST = "127.0.0.1" # localhost
+SERVER_HOST = "172.17.10.218" # Raspy's with CPSC584 wifi
+# SERVER_HOST = "10.0.0.116" # localhost
 SERVER_PORT = 5001
 
 
@@ -27,6 +68,181 @@ SERVER_PORT = 5001
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
+
+# def mediapipe_test(cap):
+#     # print(f"Starting stream with: {capture}")
+   
+#     pTime = 0
+#     cTime = 0
+
+#    # access webcam
+#     # cap = cv2.VideoCapture(capture, cv2.CAP_FFMPEG)
+#     # # cap = cv2.VideoCapture(capture)
+#     # cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+#     print(cap)
+    
+#     while True:
+#         ret, img = cap.read()
+#         if not ret or img is None:
+#             print("Failed to grab frame")
+#             continue
+
+#         frame = img.copy()
+        
+#         if frame is not None:
+#             try:
+#                 cv2.imshow("frame", frame)
+#             except Exception as e:
+#                 print("imshow crash:", e)
+
+        # if cv2.waitKey(0) == ord('q'):
+        #     break
+
+    # while True:
+    #     # pull frame
+    #     ret, frame = cap.read()
+    #     #   frame = capture
+    #     if not ret:
+    #         print("Failed to grab frame")
+    #         break
+
+    #     image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    #     image.flags.writeable = False
+
+    #   # display image
+    #     print("Showing image")
+    #     cv2.imshow('frame', frame)
+    #     if cv2.waitKey(25) == ord('q'):
+    #         break   
+   
+    # cap.release()
+    # cv2.destroyAllWindows()
+    
+    
+    
+    
+    
+# class landmarker_and_result():
+#     def __init__(self):
+#             self.result = None
+#             self.image_for_drawing = None
+#             self.lock = False  # Prevent multiple updates at once
+#             self.landmarker = mp.tasks.vision.HandLandmarker
+#             self.createLandmarker()
+    
+#     def createLandmarker(self):
+#         # callback function
+#             def update_result(result: mp.tasks.vision.HandLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
+#                 if not self.lock:
+#                     self.lock = True
+#                     self.result = result
+#                     self.image_for_drawing = output_image.numpy_view()  # Save output image
+#                     self.lock = False
+
+#             # HandLandmarkerOptions (details here: https://developers.google.com/mediapipe/solutions/vision/hand_landmarker/python#live-stream)
+#             options = mp.tasks.vision.HandLandmarkerOptions( 
+#                 base_options = mp.tasks.BaseOptions(model_asset_path="/hand_landmarker.task"),
+#                 running_mode = mp.tasks.vision.RunningMode.LIVE_STREAM, # running on a live stream
+#                 num_hands = 4, # track one hand/s
+#                 min_hand_detection_confidence = 0.3, # lower than value to get predictions more often
+#                 min_hand_presence_confidence = 0.3, # lower than value to get predictions more often
+#                 min_tracking_confidence = 0.3, # lower than value to get predictions more often
+#                 result_callback=update_result)
+        
+#             # initialize landmarker
+#             self.landmarker = self.landmarker.create_from_options(options)
+    
+#     def detect_async(self, frame):
+#         # convert np frame to mp image
+#         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame)
+#         # detect landmarks
+#         self.landmarker.detect_async(image = mp_image, timestamp_ms = int(time.time() * 1000))
+
+    # def close(self):
+    #     # close landmarker
+    #     self.landmarker.close()
+
+
+
+
+
+# def draw_landmarks_on_image(rgb_image, detection_result: mp.tasks.vision.HandLandmarkerResult):
+#    """Courtesy of https://github.com/googlesamples/mediapipe/blob/main/examples/hand_landmarker/python/hand_landmarker.ipynb"""
+#    try:
+#       if detection_result.hand_landmarks == []:
+#          return rgb_image
+#       else:
+#          hand_landmarks_list = detection_result.hand_landmarks
+#          handedness_list = detection_result.handedness
+#          annotated_image = np.copy(rgb_image)
+
+#          # Loop through the detected hands to visualize.
+#          for idx in range(len(hand_landmarks_list)):
+#             hand_landmarks = hand_landmarks_list[idx]
+            
+#             # Draw the hand landmarks.
+#             hand_landmarks_proto = landmark_pb2.NormalizedLandmarkList()
+#             hand_landmarks_proto.landmark.extend([
+#                landmark_pb2.NormalizedLandmark(x=landmark.x, y=landmark.y, z=landmark.z) for landmark in hand_landmarks])
+#             mp.solutions.drawing_utils.draw_landmarks(
+#                annotated_image,
+#                hand_landmarks_proto,
+#                mp.solutions.hands.HAND_CONNECTIONS,
+#                mp.solutions.drawing_styles.get_default_hand_landmarks_style(),
+#                mp.solutions.drawing_styles.get_default_hand_connections_style())
+
+#          return annotated_image
+#    except:
+#       return rgb_image
+
+# def count_fingers_raised(rgb_image, detection_result: mp.tasks.vision.HandLandmarkerResult):
+#     """Iterate through each hand, checking if fingers (and thumb) are raised.
+#     Hand landmark enumeration (and weird naming convention) comes from
+#     https://developers.google.com/mediapipe/solutions/vision/hand_landmarker."""
+#     try:
+#         # Get Data
+#         hand_landmarks_list = detection_result.hand_landmarks
+#         # Counter
+#         numRaised = 0
+#         # for each hand...
+#         for idx in range(len(hand_landmarks_list)):
+#             # hand landmarks is a list of landmarks where each entry in the list has an x, y, and z in normalized image coordinates
+#             hand_landmarks = hand_landmarks_list[idx]
+#             # for each fingertip... (hand_landmarks 4, 8, 12, and 16)
+#             for i in range(8,21,4):
+#                 # make sure finger is higher in image the 3 proceeding values (2 finger segments and knuckle)
+#                 tip_y = hand_landmarks[i].y
+#                 dip_y = hand_landmarks[i-1].y
+#                 pip_y = hand_landmarks[i-2].y
+#                 mcp_y = hand_landmarks[i-3].y
+#                 if tip_y < min(dip_y,pip_y,mcp_y):
+#                     numRaised += 1
+#             # for the thumb
+#             # use direction vector from wrist to base of thumb to determine "raised"
+#             tip_x = hand_landmarks[4].x
+#             dip_x = hand_landmarks[3].x
+#             pip_x = hand_landmarks[2].x
+#             mcp_x = hand_landmarks[1].x
+#             palm_x = hand_landmarks[0].x
+#             if mcp_x > palm_x:
+#                 if tip_x > max(dip_x,pip_x,mcp_x):
+#                     numRaised += 1
+#             else:
+#                 if tip_x < min(dip_x,pip_x,mcp_x):
+#                     numRaised += 1
+            
+            
+#         # display number of fingers raised on the image
+#         annotated_image = np.copy(rgb_image)
+#         height, width, _ = annotated_image.shape
+#         text_x = int(hand_landmarks[0].x * width) - 100
+#         text_y = int(hand_landmarks[0].y * height) + 50
+#         cv2.putText(img = annotated_image, text = str(numRaised) + " Fingers Raised",
+#                             org = (text_x, text_y), fontFace = cv2.FONT_HERSHEY_DUPLEX,
+#                             fontScale = 1, color = (0,0,255), thickness = 2, lineType = cv2.LINE_4)
+#         return annotated_image
+#     except:
+#         return rgb_image
 
 
 class MovieDirectorGUI(ctk.CTk):
@@ -43,6 +259,7 @@ class MovieDirectorGUI(ctk.CTk):
 
         # For video streaming
         self.stream_url = "http://172.17.10.218:8080/stream.mjpg"
+        # self.stream_url = "http://10.0.0.116:8080/stream.mjpg"
         project_dir = os.path.dirname(os.path.abspath(__file__))
         
         # # For audio streaming
@@ -72,6 +289,7 @@ class MovieDirectorGUI(ctk.CTk):
         # Display Zoom state
         self.showZoom = False
         self.current_zoomvalue = 1
+        
         
         # Left side icons: camera, focus, zoom
         left_icons = ["icons/camera.png", "icons/focus2.png", "icons/zoom.png", "icons/autofocus.png", "icons/colorFilter.png", "icons/joystick.png", "icons/lock.png"]
@@ -284,10 +502,68 @@ class MovieDirectorGUI(ctk.CTk):
         dpad_btn("▼", "down", 2, 1)
         dpad_btn("-", "-", 2, 0)
         dpad_btn("+", "+", 2, 2)
+        
+        # Look Up - Down Controls
+        self.look = ctk.CTkFrame(self.bottom, corner_radius=16)
+        self.look.grid(row=0, column=1, padx=1, pady=12, sticky="ew")
+        
+        try:
+            look_up_path = os.path.join(project_dir, "icons/look-up.png")
+            lookup_img = Image.open(look_up_path)
+            lookup_img = lookup_img.resize((40, 40), Image.Resampling.LANCZOS)
+            lookup_photo = ImageTk.PhotoImage(lookup_img)
+            
+            ctk.CTkButton(
+                self.look,
+                image=lookup_photo,
+                text="",
+                width=52,
+                height=52,
+                corner_radius=14,
+                command=lambda: self.on_move("look up"),
+            ).pack(pady=6)
+        except Exception as e:
+            print(f"Error loading record image: {e}")
+            ctk.CTkButton(
+                self.look,
+                text="-",
+                width=52,
+                height=52,
+                corner_radius=14,
+                text_color="white",
+                command=lambda: self.on_move("look up"),
+            ).pack(pady=6)
+
+        try:
+            lookdown_path = os.path.join(project_dir, "icons/look-down.png")
+            lookdown_img = Image.open(lookdown_path)
+            lookdown_img = lookdown_img.resize((40, 40), Image.Resampling.LANCZOS)
+            lookdown_photo = ImageTk.PhotoImage(lookdown_img)
+            
+            ctk.CTkButton(
+                self.look,
+                image=lookdown_photo,
+                text="",
+                width=52,
+                height=52,
+                corner_radius=14,
+                command=lambda: self.on_move("look down"),
+            ).pack(pady=6)
+        except Exception as e:
+            print(f"Error loading pause image: {e}")
+            ctk.CTkButton(
+                self.look,
+                text="-",
+                width=52,
+                height=52,
+                corner_radius=14,
+                command=lambda: self.on_move("look down"),
+            ).pack(pady=6)
+
 
         # ---- Record Controls (middle) ----
         self.controls = ctk.CTkFrame(self.bottom, corner_radius=16)
-        self.controls.grid(row=0, column=1, padx=12, pady=12, sticky="ew")
+        self.controls.grid(row=0, column=2, padx=24, pady=12, sticky="ew")
 
         # Record button (red) with image
         try:
@@ -372,7 +648,7 @@ class MovieDirectorGUI(ctk.CTk):
 
         # ---- Gallery, Speaker, Settings (right) ----
         self.utility = ctk.CTkFrame(self.bottom, corner_radius=16)
-        self.utility.grid(row=0, column=2, padx=12, pady=12, sticky="e")
+        self.utility.grid(row=0, column=3, padx=12, pady=12, sticky="e")
 
         # Gallery button with image
         try:
@@ -453,15 +729,7 @@ class MovieDirectorGUI(ctk.CTk):
                 width=52,
                 height=52,
                 corner_radius=14,
-            ).pack(side="left", padx=6)
-            
-            
-        # !! ROBOT SPEED CHANGE POSITION LATER
-        ctk.CTkLabel(
-                self.utility,
-                text=str(self.speed),
-                font=("Arial", 32)
-            ).pack(side="left", padx=6)  
+            ).pack(side="left", padx=6) 
 
         # ---- OpenCV stream state ----
         self._stop = threading.Event()
@@ -476,6 +744,15 @@ class MovieDirectorGUI(ctk.CTk):
         else:
             print("Stream opened:", self.stream_url)
             threading.Thread(target=self._reader_loop, daemon=True).start()
+            # Test mediapipe 
+            # threading.Thread(target=mediapipe_test, args=(self.cap,), daemon=True).start()
+        
+        # Initialize PoseLandmarker once
+        base_options = python.BaseOptions(model_asset_path='pose_landmarker_full.task')
+        options = vision.PoseLandmarkerOptions(
+            base_options=base_options,
+            output_segmentation_masks=False)
+        self.pose_detector = vision.PoseLandmarker.create_from_options(options)
             
         self.protocol("WM_DELETE_WINDOW", self.on_close)
         self.after(33, self._render_latest_frame)
@@ -484,9 +761,20 @@ class MovieDirectorGUI(ctk.CTk):
         self.send_audio_event = threading.Event()
         # self.send_audio_event.set()  # audio enabled
         threading.Thread(target=self.audio_sender, daemon=True).start()
+        
+        
+        
+        # !! ROBOT SPEED CHANGE POSITION LATER
+        self.speed_label = ctk.CTkLabel(
+                self.utility,
+                text=str(self.speed),
+                font=("Arial", 32)
+            )
+        self.speed_label.pack(side="left", padx=6) 
 
     def _reader_loop(self):
         """Read frames in background so GUI never blocks."""
+        
         while not self._stop.is_set():
             if self.cap is None:
                 break
@@ -496,22 +784,64 @@ class MovieDirectorGUI(ctk.CTk):
                 # brief backoff; avoids tight loop when stream drops
                 time.sleep(0.05)
                 continue
+            
+            # mirror frame
+            # frame = cv2.flip(frame, 1)
+            # resized_frame = cv2.resize(frame, (320, 240))
 
             # BGR -> RGB
             self._latest_frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
     def _render_latest_frame(self):
-        frame = self._latest_frame_rgb
-        if frame is not None:
+        image = self._latest_frame_rgb
+        
+        if image is not None:
             w = self.preview.winfo_width()
             h = self.preview.winfo_height()
             if w > 10 and h > 10:
-                frame = cv2.resize(frame, (w, h), interpolation=cv2.INTER_AREA)
+                image = cv2.resize(image, (w, h), interpolation=cv2.INTER_AREA)
 
-            img = Image.fromarray(frame)
-            imgtk = ImageTk.PhotoImage(img)
-            self._latest_imgtk = imgtk
-            self.video_label.configure(image=imgtk)
+            # Convert numpy array to MediaPipe Image format
+            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image)
+
+            # Detect pose landmarks from the input image
+            detection_result = self.pose_detector.detect(mp_image)
+            # result = detection_result.pose_landmarks
+            # print(result)
+            # print(len(result))
+            
+            self.process_result(detection_result, w, h)
+            
+            # print(w, h)
+
+            # Process the detection result and draw landmarks
+            annotated_image = draw_landmarks_on_image(mp_image.numpy_view(), detection_result)
+            
+            # cv2.circle(annotated_image, (w, h), 75, (255, 0, 0), 10)
+            # cv2.circle(annotated_image, (int(w/2), int(h/2)), 25, (255, 0, 0), 10)
+            
+            # 5 lines
+            cv2.line(annotated_image, (int(w/5), 0), (int(w/5), h), (0, 255, 0), 3)
+            cv2.line(annotated_image, (int(w/5)*2, 0), (int(w/5)*2, h), (0, 255, 0), 3)
+            cv2.line(annotated_image, (int(w/5)*3, 0), (int(w/5)*3, h), (0, 255, 0), 3)
+            cv2.line(annotated_image, (int(w/5)*4, 0), (int(w/5)*4, h), (0, 255, 0), 3)
+            
+            # # Rule of thirds line
+            # cv2.line(annotated_image, (int(w/3), 0), (int(w/3), h), (0, 255, 0), 3)
+            # cv2.line(annotated_image, (int(w/3)*2, 0), (int(w/3)*2, h), (0, 255, 0), 3)
+            # cv2.line(annotated_image, (0, int(h/3)), (w, int(h/3)), (0, 255, 0), 3)
+            # cv2.line(annotated_image, (0, int(h/3)*2), (w, int(h/3)*2), (0, 255, 0), 3)
+            
+
+
+            # Convert to PhotoImage for Tkinter display
+            annotated_image_pil = Image.fromarray(annotated_image)
+            annotated_imgtk = ImageTk.PhotoImage(annotated_image_pil)
+            
+            
+            
+            self.video_label.configure(image=annotated_imgtk)
+            # self.video_label.image = annotated_imgtk  # Keep a reference
 
         self.after(33, self._render_latest_frame)
 
@@ -559,6 +889,88 @@ class MovieDirectorGUI(ctk.CTk):
         # self.current_zoomvalue = value
         self.sendMessage(f"autofocus:{value}")
         
+    def process_result(self, detection_result, w, h):
+        get_body = detection_result.pose_landmarks
+        list = []
+        if len(get_body) == 0:
+            return
+        result = get_body[0]
+        right_sx = float(result[12].x * w)
+        list.append(right_sx)
+        # right_sy = float(result[12].y * h)
+        
+        left_sx = float(result[11].x * w)
+        list.append(left_sx)
+        # left_sy = float(result[11].y - (h/2))
+        
+        right_hx = float(result[24].x * w)
+        list.append(right_hx)
+        # right_hy = float(result[24].y - (h))
+        
+        left_hx = float(result[23].x * w)
+        list.append(left_hx)
+        # left_hy = float(result[23].y - (h))
+        
+        # Convert to percentage offset
+        # right_sx /= float(w/2)
+        # right_sy /= float(h/2)
+        
+        # left_sx /= float(w/2)
+        # left_sy /= float(h/2)
+        
+        # right_hx /= float(w)
+        # right_hy /= float(h)
+        
+        # left_hx /= float(w)
+        # left_hy /= float(h)
+        
+        # print(right_sx)
+        # print(right_sy)
+        # print(left_sx)
+        # print(left_sy)
+        # print(right_hx)
+        # print(right_hy)
+        # print(left_hx)
+        # print(left_hy)
+        
+        # Source - https://stackoverflow.com/a/10285205
+# Posted by ninjagecko, modified by community. See post 'Timeline' for change history
+# Retrieved 2026-03-30, License - CC BY-SA 4.0
+
+        # !! TRACKING
+        # Move left if atleast 2 points of the torso is at w/5 at the left of the screen
+        # if sum(2 for x in list if x < w/5) >= 2:
+        #     self.sendMessage(f"move:left")
+        
+        # Move right if atleast 2 points of the torso is at w/5 at the right of the screen
+        # if sum(2 for x in list if x > w/5*4) >= 2:
+        #     self.sendMessage(f"move:right")
+
+        # !! TRUCKING
+        # Move forward if shoulders are too far
+        # if (abs(left_sx-right_sx) < 80):
+        #     self.sendMessage(f"move:up")
+        
+        # !! RULE OF THIRDS
+        # print(abs(left_sx-right_sx))
+        
+        # !! SYMMETRY
+        # if (right_sx > int(w/5)*2
+        #     and (left_sx < int(w/5)*3)):
+
+        
+        ## !! NONE FOR NOW
+        # if (right_sx < 0.1 or right_sy < 0.1 or left_sx < 0.1 or left_sy < 0.1 or right_hx < 0.1 or right_hy < 0.1 or 
+        #     left_hx < 0.1 or left_hy < 0.1):
+            
+        #     self.sendMessage(f"move:right")
+            
+        # elif (right_sx < 0.9 or right_sy < 0.9 or left_sx < 0.9 or left_sy < 0.9 or right_hx < 0.9 or right_hy < 0.9 or 
+        #     left_hx < 0.9 or left_hy < 0.9):
+            
+        #     self.sendMessage(f"move:left")
+
+        
 
     def on_right_action(self, idx):
         print("Right button", idx)
@@ -576,6 +988,13 @@ class MovieDirectorGUI(ctk.CTk):
     def on_move(self, direction):
         print("Move:", direction)
         self.sendMessage(f"move:{direction}")
+        
+        if (direction == "+"):
+            self.speed += 5
+            self.speed_label.configure(text=str(self.speed))
+        elif (direction == "-"):
+            self.speed -= 5
+            self.speed_label.configure(text=str(self.speed))
         
     def directorSpeaker(self):
         self.setSpeaker = not self.setSpeaker

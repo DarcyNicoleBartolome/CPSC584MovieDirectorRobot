@@ -262,55 +262,62 @@ def move_sideRight(speed, current):
    stand(speed, current)
    crawler.stand_position = crawler.stand_position + 1 & 1
    current = crawler.current_step_all_leg_value()
-   
-   right_backleg_move =  [
-      
-      # Lifts the right rear leg
-      [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_START, X_DEFAULT, Z_DEFAULT],[Y_START, X_TURN, Z_UP]], 
-      
-      # move the right rear leg to the left
-      [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_START, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT*2.5, X_DEFAULT, Z_UP]],
-      
-      # Put down the right rear leg
-      [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_START, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT*2.5, X_DEFAULT,Z_DEFAULT]],
-      
-      # Move the rest legs to the leg
-      [[X_START, Y_DEFAULT, Z_DEFAULT], [Y_DEFAULT*2.5, X_DEFAULT, Z_DEFAULT], [Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
-      
-      # Lift the left front leg up
-      [[X_START, Y_DEFAULT, Z_DEFAULT], [Y_DEFAULT*2.5, X_DEFAULT, Z_UP], [Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT]],
-      
-      # Move the left front leg to the left
-      [[X_START, Y_DEFAULT, Z_DEFAULT], [X_START, Y_DEFAULT, Z_UP], [Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
-      
-      # # Put down the left front rear leg
-      [[X_START, Y_DEFAULT, Z_DEFAULT], [X_START, X_TURN, Z_DEFAULT], [Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
-      
+   STEP = Y_DEFAULT * 1.2   # smaller step for smoothness
+   LIFT = Z_UP
+
+   right_backleg_move = [
+
+      # Shift weight left (prepare to lift rear right)
+      [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],
+      [Y_DEFAULT, X_DEFAULT, Z_DEFAULT],
+      [Y_START,   X_DEFAULT, Z_DEFAULT],
+      [Y_START,   X_DEFAULT, Z_DEFAULT]],
+
+      # Lift rear right leg
+      [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],
+      [Y_DEFAULT, X_DEFAULT, Z_DEFAULT],
+      [Y_START,   X_DEFAULT, Z_DEFAULT],
+      [Y_START,   X_DEFAULT, LIFT]],
+
+      # Move rear right leg sideways
+      [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],
+      [Y_DEFAULT, X_DEFAULT, Z_DEFAULT],
+      [Y_START,   X_DEFAULT, Z_DEFAULT],
+      [Y_START + STEP, X_DEFAULT, LIFT]],
+
+      # Place it down
+      [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],
+      [Y_DEFAULT, X_DEFAULT, Z_DEFAULT],
+      [Y_START,   X_DEFAULT, Z_DEFAULT],
+      [Y_START + STEP, X_DEFAULT, Z_DEFAULT]],
    ]
-   
-   
-   right_frontleg_move =  [
-      
-      # Lifts the right front leg
-      [[Y_START, X_TURN, Z_UP], [X_START, X_TURN, Z_DEFAULT], [Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
-      
-      # move the right front leg to the left
-      [[Y_DEFAULT*2.5, X_DEFAULT, Z_UP], [X_START, X_TURN, Z_DEFAULT], [Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
-      
-      # Put down the right front leg
-      [[Y_DEFAULT*2.5, X_DEFAULT, Z_DEFAULT], [X_START, X_TURN, Z_DEFAULT], [Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
-      
-      # Move the rest legs to the leg
-      [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT*2.5, X_DEFAULT, Z_DEFAULT], [X_START, Y_DEFAULT, Z_DEFAULT]],
-      
-      # Lift the left back leg up
-      [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT*2.5, X_DEFAULT, Z_UP],[X_START, X_DEFAULT, Z_DEFAULT]],
-      
-      # Move the left back leg to the left
-      [[X_DEFAULT, Y_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_START, Y_DEFAULT, Z_UP],[X_START, X_DEFAULT, Z_DEFAULT]],
-      
-      # # Put down the left back leg
-      [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT],[Y_START, X_DEFAULT, Z_DEFAULT],[X_START, X_DEFAULT, Z_DEFAULT]], 
+
+
+   right_frontleg_move = [
+
+      # Shift weight left (prepare front right)
+      [[Y_START,   X_DEFAULT, Z_DEFAULT],
+      [Y_DEFAULT, X_DEFAULT, Z_DEFAULT],
+      [Y_DEFAULT, X_DEFAULT, Z_DEFAULT],
+      [X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
+
+      # Lift front right leg
+      [[Y_START,   X_DEFAULT, LIFT],
+      [Y_DEFAULT, X_DEFAULT, Z_DEFAULT],
+      [Y_DEFAULT, X_DEFAULT, Z_DEFAULT],
+      [X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
+
+      # Move it sideways
+      [[Y_START + STEP, X_DEFAULT, LIFT],
+      [Y_DEFAULT,      X_DEFAULT, Z_DEFAULT],
+      [Y_DEFAULT,      X_DEFAULT, Z_DEFAULT],
+      [X_DEFAULT,      Y_DEFAULT, Z_DEFAULT]],
+
+      # Place it down
+      [[Y_START + STEP, X_DEFAULT, Z_DEFAULT],
+      [Y_DEFAULT,      X_DEFAULT, Z_DEFAULT],
+      [Y_DEFAULT,      X_DEFAULT, Z_DEFAULT],
+      [X_DEFAULT,      Y_DEFAULT, Z_DEFAULT]],
    ]
    
    if leg_mode == 0:
@@ -453,7 +460,7 @@ def process_request(data, client_socket, client_address):
    if message[0] == "move":
       if 'left' == message[1]: # move sideway left
          move_sideLeft(speed, current_pose)
-      elif 'rotate left' == message: # rotate left
+      elif 'rotate left' == message[1]: # rotate left
          move_rotateLeft(speed, current_pose)
       elif 'rotate right' == message[1]: # rotate right
          move_rotateRight(speed, current_pose)
@@ -474,6 +481,7 @@ def process_request(data, client_socket, client_address):
          print(speed)
       elif '-' == message[1]: # decrease
          speed-=5
+         print(speed)
       else: return # Do nothing
       
    elif message[0] == "autofocus":
