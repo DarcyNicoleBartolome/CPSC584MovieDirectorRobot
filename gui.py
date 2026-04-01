@@ -258,7 +258,7 @@ class MovieDirectorGUI(ctk.CTk):
         self.speed = 90
 
         # For video streaming
-        self.stream_url = "http://172.17.10.218:8080/stream.mjpg"
+        self.stream_url = "http://172.17.10.222:8080/stream.mjpg"
         # self.stream_url = "http://10.0.0.116:8080/stream.mjpg"
         project_dir = os.path.dirname(os.path.abspath(__file__))
         
