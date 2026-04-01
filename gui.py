@@ -417,8 +417,29 @@ class MovieDirectorGUI(ctk.CTk):
             ).pack(pady=6)
 
         # ---- Record Controls (middle) ----
-        self.controls = ctk.CTkFrame(self.bottom, corner_radius=16)
-        self.controls.grid(row=0, column=2, padx=24, pady=12, sticky="ew")
+        self.record_section = ctk.CTkFrame(self.bottom, corner_radius=16, fg_color="transparent")
+        self.record_section.grid(row=0, column=2, padx=24, pady=12, sticky="ew")
+
+        self.controls = ctk.CTkFrame(self.record_section, corner_radius=16)
+        self.controls.pack()
+
+        # Video name entry
+        self.video_name_entry = ctk.CTkEntry(
+            self.record_section,
+            placeholder_text="Enter video name",
+            width=200,
+            height=30,
+            corner_radius=10,
+        )
+        self.video_name_entry.pack(pady=(6, 0))
+
+        self.video_name_error = ctk.CTkLabel(
+            self.record_section,
+            text="",
+            text_color="#FF4444",
+            font=("Arial", 12),
+        )
+        self.video_name_error.pack(pady=(2, 0))
 
         try:
             record_path = os.path.join(project_dir, "icons/record.png")
@@ -712,6 +733,18 @@ class MovieDirectorGUI(ctk.CTk):
             self.set_status("Already recording")
             return
 
+        video_name = self.video_name_entry.get().strip()
+        if not video_name:
+            self.video_name_error.configure(text="No video name, please enter")
+            return
+
+        self.video_name_error.configure(text="")
+
+        filepath = os.path.join(self.recordings_dir, f"{video_name}.avi")
+        if os.path.exists(filepath):
+            self.video_name_error.configure(text="Video name already exists, please choose another name")
+            return
+
         if self._latest_frame_bgr is None:
             self.set_status("No video frame available yet")
             return
@@ -720,11 +753,7 @@ class MovieDirectorGUI(ctk.CTk):
         h, w = frame.shape[:2]
         self.record_size = (w, h)
 
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self.recording_filename = os.path.join(
-            self.recordings_dir,
-            f"recording_{timestamp}.avi"
-        )
+        self.recording_filename = filepath
 
         fourcc = cv2.VideoWriter_fourcc(*"XVID")
         self.video_writer = cv2.VideoWriter(
@@ -741,6 +770,7 @@ class MovieDirectorGUI(ctk.CTk):
 
         self.is_recording = True
         self.record_start_time = time.time()
+        self.video_name_entry.delete(0, "end")
         self.set_status("Recording started")
         print("Recording started:", self.recording_filename)
 
