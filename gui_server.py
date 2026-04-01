@@ -368,20 +368,13 @@ def get_local_ip():
       return "Unknown"
    
 def start_server():
-   # Run the mjpeg.py code to start video streaming
-   # running other file using run()
-   # subprocess.run(["python", "mjpeg.py"])
-   # os.system("python mjpeg.py")
    
    """ Start the server and listen for incoming connections. """
    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
       server_socket.bind((HOST, PORT))
       server_socket.listen(5)
-      # Recorded and print that the server has started listening for connection with client and store to a server log
-      # logging.info(f"Server started and listening on {HOST}:{PORT}")
       print(f"Server started and listening on {HOST}:{PORT}")
       
-      # threading.Thread(target=VideoStream, args=(client_socket, client_address)).start()
       threading.Thread(target=VideoStream).start()
       # threading.Thread(target=AudioStream).start()
       
@@ -392,8 +385,6 @@ def start_server():
                
                threading.Thread(target=handle_client, args=(client_socket, client_address)).start()
             except Exception as e:
-               # Records to the server log and prints if there has been an error on accepting connections
-               # logging.error(f"Error accepting connections: {e}")
                print(f"Error accepting connections: {e}")
                
             current_pose = crawler.current_step_all_leg_value()
@@ -403,8 +394,6 @@ def start_server():
 
 def handle_client(client_socket, client_address):
    """ Handle incoming client requests. """
-   # Recorded and print that the server has formed connection with a client and store to a server log
-   # logging.info(f"Connection from {client_address}")
    print(f"Connection from {client_address}")
    
    try:
@@ -415,9 +404,6 @@ def handle_client(client_socket, client_address):
          request_data = client_socket.recv(CHUNK)
          if not request_data:  # Client has closed the connection
             break
-            
-         # Recorded the received request from the client and store to a server log
-         # logging.info(f"Received request: {request_data} from {client_address}")
          # Print the received request from the client
          print(f"Received request: {request_data} from {client_address}")
          
@@ -425,15 +411,13 @@ def handle_client(client_socket, client_address):
          process_request(request_data, client_socket, client_address)
             
    except Exception as e:
-         # print and log the error found while reading the client's data
+         # print the error found while reading the client's data
          print(f"Error Found in Client's data: {e}")
-         # logging.info(f"Error Found in Client's data: {e}")
          
    finally:
          # Close the client connection with grace
          client_socket.close()
-         # Recorded and print that the client has close connection with the server and store to a server log
-         # logging.info(f"Closed connection with {client_address}")
+         # print that the client has close connection with the server and store to a server log
          print(f"Closed connection with {client_address}")         
             
 def process_request(data, client_socket, client_address):
@@ -445,7 +429,6 @@ def process_request(data, client_socket, client_address):
    if not request_data or request_data == "":
       client_socket.sendall("".encode("utf-8"))
       print(f"the request data is empty")
-      # logging.info(f"the request data is empty")
       return
    
    # parse the message

@@ -937,14 +937,14 @@ class MovieDirectorGUI(ctk.CTk):
 # Posted by ninjagecko, modified by community. See post 'Timeline' for change history
 # Retrieved 2026-03-30, License - CC BY-SA 4.0
 
-        # !! TRACKING
+        # !! if tracking is on TRACKING
         # Move left if atleast 2 points of the torso is at w/5 at the left of the screen
-        # if sum(2 for x in list if x < w/5) >= 2:
-        #     self.sendMessage(f"move:left")
+        if sum(2 for x in list if x < w/5) >= 2:
+            self.sendMessage(f"move:left")
         
         # Move right if atleast 2 points of the torso is at w/5 at the right of the screen
-        # if sum(2 for x in list if x > w/5*4) >= 2:
-        #     self.sendMessage(f"move:right")
+        if sum(2 for x in list if x > w/5*4) >= 2:
+            self.sendMessage(f"move:right")
 
         # !! TRUCKING
         # Move forward if shoulders are too far
@@ -1028,7 +1028,7 @@ class MovieDirectorGUI(ctk.CTk):
                     print("Audio send error:", e)
                     break
         
-    # Handles when user sends message of their input to the chatroom
+    # Handles when user sends message of their input
     def sendMessage(self, message):
         # If user tries to send an empty message, nothing happens and return
         if not message:
