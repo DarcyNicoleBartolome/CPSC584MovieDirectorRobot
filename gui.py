@@ -768,8 +768,6 @@ class MovieDirectorGUI(ctk.CTk):
         return files
 
     def open_gallery(self):
-        files = self.get_recordings()
-
         gallery = ctk.CTkToplevel(self)
         gallery.title("Gallery")
         gallery.geometry("500x400")
@@ -779,67 +777,226 @@ class MovieDirectorGUI(ctk.CTk):
         scroll = ctk.CTkScrollableFrame(gallery, width=440, height=260)
         scroll.pack(padx=12, pady=12, fill="both", expand=True)
 
-        if not files:
-            ctk.CTkLabel(scroll, text="No recordings found").pack(pady=10)
-            return
+        def refresh_gallery():
+            for widget in scroll.winfo_children():
+                widget.destroy()
 
-        for filename in files:
-            row = ctk.CTkFrame(scroll)
-            row.pack(fill="x", padx=6, pady=6)
+            files = self.get_recordings()
+            if not files:
+                ctk.CTkLabel(scroll, text="No recordings found").pack(pady=10)
+                return
 
-            ctk.CTkLabel(row, text=filename, anchor="w").pack(side="left", padx=8, pady=8)
+            for filename in files:
+                row = ctk.CTkFrame(scroll)
+                row.pack(fill="x", padx=6, pady=6)
 
-            ctk.CTkButton(
-                row,
-                text="Play",
-                width=80,
-                command=lambda f=filename: self.play_recording(os.path.join(self.recordings_dir, f))
-            ).pack(side="right", padx=8, pady=8)
+                ctk.CTkLabel(row, text=filename, anchor="w").pack(side="left", padx=8, pady=8)
+
+                ctk.CTkButton(
+                    row,
+                    text="Delete",
+                    width=70,
+                    fg_color="#CC0000",
+                    hover_color="#990000",
+                    command=lambda f=filename: delete_recording(f)
+                ).pack(side="right", padx=4, pady=8)
+
+                ctk.CTkButton(
+                    row,
+                    text="Play",
+                    width=80,
+                    command=lambda f=filename: self.play_recording(os.path.join(self.recordings_dir, f))
+                ).pack(side="right", padx=4, pady=8)
+
+        def delete_recording(filename):
+            filepath = os.path.join(self.recordings_dir, filename)
+            try:
+                os.remove(filepath)
+                self.set_status(f"Deleted: {filename}")
+            except Exception as e:
+                print(f"Error deleting {filename}: {e}")
+                self.set_status(f"Failed to delete: {filename}")
+            refresh_gallery()
+
+        refresh_gallery()
 
     def play_recording(self, filepath):
         player = ctk.CTkToplevel(self)
         player.title(os.path.basename(filepath))
-        player.geometry("800x500")
+        player.geometry("800x580")
 
         video_frame = ctk.CTkLabel(player, text="")
-        video_frame.pack(fill="both", expand=True, padx=10, pady=10)
-
-        info_label = ctk.CTkLabel(player, text=f"Playing: {os.path.basename(filepath)}")
-        info_label.pack(pady=(0, 10))
+        video_frame.pack(fill="both", expand=True, padx=10, pady=(10, 4))
 
         cap = cv2.VideoCapture(filepath)
 
         if not cap.isOpened():
-            info_label.configure(text="Failed to open video")
+            ctk.CTkLabel(player, text="Failed to open video").pack(pady=10)
             return
+
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        fps = cap.get(cv2.CAP_PROP_FPS) or 20.0
+        total_seconds = total_frames / fps if fps > 0 else 0
+        frame_delay = int(1000 / fps) if fps > 0 else 33
+
+        state = {
+            "playing": True,
+            "seeking": False,
+            "speed": 1.0,
+        }
+
+        # --- Seek bar ---
+        seek_slider = ctk.CTkSlider(
+            player, from_=0, to=max(total_frames - 1, 1), number_of_steps=max(total_frames - 1, 1)
+        )
+        seek_slider.set(0)
+        seek_slider.pack(fill="x", padx=16, pady=(4, 2))
+
+        def on_seek_press(event):
+            state["seeking"] = True
+
+        def on_seek_release(event):
+            frame_no = int(seek_slider.get())
+            cap.set(cv2.CAP_PROP_POS_FRAMES, frame_no)
+            state["seeking"] = False
+            if not state["playing"]:
+                show_frame_at_current_pos()
+
+        seek_slider.bind("<ButtonPress-1>", on_seek_press)
+        seek_slider.bind("<ButtonRelease-1>", on_seek_release)
+
+        # --- Controls row ---
+        controls_frame = ctk.CTkFrame(player, corner_radius=12)
+        controls_frame.pack(fill="x", padx=16, pady=(2, 10))
+
+        def fmt_time(seconds):
+            m = int(seconds) // 60
+            s = int(seconds) % 60
+            return f"{m:02d}:{s:02d}"
+
+        time_label = ctk.CTkLabel(controls_frame, text=f"00:00 / {fmt_time(total_seconds)}", font=("Arial", 13))
+        time_label.pack(side="right", padx=12)
+
+        speed_label = ctk.CTkLabel(controls_frame, text="1.0x", font=("Arial", 13))
+        speed_label.pack(side="right", padx=6)
+
+        def toggle_play():
+            state["playing"] = not state["playing"]
+            if state["playing"] and state.get("pause_icon"):
+                play_btn.configure(image=state["pause_icon"], text="")
+            elif state.get("play_icon"):
+                play_btn.configure(image=state["play_icon"], text="")
+            else:
+                play_btn.configure(image="", text="▶" if not state["playing"] else "⏸")
+            if state["playing"]:
+                update_video()
+
+        def slower():
+            state["speed"] = max(0.25, state["speed"] - 0.5)
+            speed_label.configure(text=f"{state['speed']:.2g}x")
+
+        def faster():
+            state["speed"] = min(8.0, state["speed"] + 0.5)
+            speed_label.configure(text=f"{state['speed']:.2g}x")
+
+        btn_cfg = dict(width=44, height=36, corner_radius=10)
+
+        # Load player control icons
+        project_dir = os.path.dirname(os.path.abspath(__file__))
+        icon_size = (24, 24)
+        try:
+            rw_img = Image.open(os.path.join(project_dir, "icons/rewind.png")).resize(icon_size, Image.Resampling.LANCZOS)
+            state["rewind_icon"] = ImageTk.PhotoImage(rw_img)
+        except Exception:
+            state["rewind_icon"] = None
+        try:
+            fw_img = Image.open(os.path.join(project_dir, "icons/forward.png")).resize(icon_size, Image.Resampling.LANCZOS)
+            state["forward_icon"] = ImageTk.PhotoImage(fw_img)
+        except Exception:
+            state["forward_icon"] = None
+        try:
+            pause2_img = Image.open(os.path.join(project_dir, "icons/pause2.png")).resize(icon_size, Image.Resampling.LANCZOS)
+            state["pause_icon"] = ImageTk.PhotoImage(pause2_img)
+        except Exception:
+            state["pause_icon"] = None
+        try:
+            play_img = Image.open(os.path.join(project_dir, "icons/play.png")).resize(icon_size, Image.Resampling.LANCZOS)
+            state["play_icon"] = ImageTk.PhotoImage(play_img)
+        except Exception:
+            state["play_icon"] = None
+
+        if state["rewind_icon"]:
+            ctk.CTkButton(controls_frame, image=state["rewind_icon"], text="", command=slower, **btn_cfg).pack(side="left", padx=4, pady=6)
+        else:
+            ctk.CTkButton(controls_frame, text="\u23ea", command=slower, **btn_cfg).pack(side="left", padx=4, pady=6)
+
+        if state["pause_icon"]:
+            play_btn = ctk.CTkButton(controls_frame, image=state["pause_icon"], text="", command=toggle_play, width=52, height=36, corner_radius=10)
+        else:
+            play_btn = ctk.CTkButton(controls_frame, text="\u23f8", command=toggle_play, width=52, height=36, corner_radius=10)
+        play_btn.pack(side="left", padx=4, pady=6)
+
+        if state["forward_icon"]:
+            ctk.CTkButton(controls_frame, image=state["forward_icon"], text="", command=faster, **btn_cfg).pack(side="left", padx=4, pady=6)
+        else:
+            ctk.CTkButton(controls_frame, text="\u23e9", command=faster, **btn_cfg).pack(side="left", padx=4, pady=6)
+
+        def show_frame_at_current_pos():
+            if not player.winfo_exists():
+                return
+            ok, frame = cap.read()
+            if ok:
+                display_frame(frame)
+                pos = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
+                if not state["seeking"]:
+                    seek_slider.set(pos)
+                current_sec = pos / fps if fps > 0 else 0
+                time_label.configure(text=f"{fmt_time(current_sec)} / {fmt_time(total_seconds)}")
+
+        def display_frame(frame):
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            w = max(video_frame.winfo_width(), 100)
+            h = max(video_frame.winfo_height(), 100)
+            frame_rgb = cv2.resize(frame_rgb, (w, h), interpolation=cv2.INTER_AREA)
+            img = Image.fromarray(frame_rgb)
+            imgtk = ImageTk.PhotoImage(img)
+            video_frame.imgtk = imgtk
+            video_frame.configure(image=imgtk)
 
         def update_video():
             if not player.winfo_exists():
                 cap.release()
                 return
 
+            if not state["playing"]:
+                return
+
+            if state["seeking"]:
+                player.after(frame_delay, update_video)
+                return
+
             ok, frame = cap.read()
             if not ok:
-                cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
-                ok, frame = cap.read()
-                if not ok:
-                    cap.release()
-                    return
+                # End of video — stop playback
+                state["playing"] = False
+                if state.get("play_icon"):
+                    play_btn.configure(image=state["play_icon"], text="")
+                else:
+                    play_btn.configure(image="", text="▶")
+                return
 
-            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            display_frame(frame)
 
-            w = max(video_frame.winfo_width(), 100)
-            h = max(video_frame.winfo_height(), 100)
-            frame_rgb = cv2.resize(frame_rgb, (w, h), interpolation=cv2.INTER_AREA)
+            pos = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
+            seek_slider.set(pos)
+            current_sec = pos / fps if fps > 0 else 0
+            time_label.configure(text=f"{fmt_time(current_sec)} / {fmt_time(total_seconds)}")
 
-            img = Image.fromarray(frame_rgb)
-            imgtk = ImageTk.PhotoImage(img)
-            video_frame.imgtk = imgtk
-            video_frame.configure(image=imgtk)
-
-            player.after(33, update_video)
+            delay = max(1, int(frame_delay / state["speed"]))
+            player.after(delay, update_video)
 
         def on_player_close():
+            state["playing"] = False
             cap.release()
             player.destroy()
 
