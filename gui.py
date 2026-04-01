@@ -774,8 +774,15 @@ class MovieDirectorGUI(ctk.CTk):
 
         ctk.CTkLabel(gallery, text="Saved Recordings", font=("Arial", 20, "bold")).pack(pady=12)
 
+        gallery_status = ctk.CTkLabel(gallery, text="", font=("Arial", 13))
+        gallery_status.pack(pady=(0, 4))
+
         scroll = ctk.CTkScrollableFrame(gallery, width=440, height=260)
         scroll.pack(padx=12, pady=12, fill="both", expand=True)
+
+        def show_gallery_status(msg):
+            gallery_status.configure(text=msg)
+            gallery.after(2000, lambda: gallery_status.configure(text=""))
 
         def refresh_gallery():
             for widget in scroll.winfo_children():
@@ -812,10 +819,10 @@ class MovieDirectorGUI(ctk.CTk):
             filepath = os.path.join(self.recordings_dir, filename)
             try:
                 os.remove(filepath)
-                self.set_status(f"Deleted: {filename}")
+                show_gallery_status(f"Deleted: {filename}")
             except Exception as e:
                 print(f"Error deleting {filename}: {e}")
-                self.set_status(f"Failed to delete: {filename}")
+                show_gallery_status(f"Failed to delete: {filename}")
             refresh_gallery()
 
         refresh_gallery()
