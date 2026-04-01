@@ -84,7 +84,9 @@ class MovieDirectorGUI(ctk.CTk):
         os.makedirs(self.recordings_dir, exist_ok=True)
 
         self.is_recording = False
+        self.is_paused = False
         self.record_start_time = None
+        self.record_elapsed = 0.0
         self.video_writer = None
         self.recording_filename = None
         self.record_fps = 20.0
@@ -116,6 +118,7 @@ class MovieDirectorGUI(ctk.CTk):
         self.left.grid(row=0, column=0, padx=(18, 10), pady=(18, 10), sticky="ns")
 
         self.showZoom = False
+        self.showCameraShots = False
         self.current_zoomvalue = 1
 
         left_icons = [
@@ -262,6 +265,36 @@ class MovieDirectorGUI(ctk.CTk):
             command=self.AfManual
         )
         self.AF_slider.set(0)
+
+        # ---- Camera shot presets ----
+        self.camera_shots_frame = ctk.CTkFrame(self.center, corner_radius=12, fg_color="gray20")
+
+        ctk.CTkButton(
+            self.camera_shots_frame,
+            text="Wide",
+            width=80,
+            height=36,
+            corner_radius=10,
+            command=lambda: self.set_camera_shot("wide"),
+        ).pack(side="left", padx=6, pady=6)
+
+        ctk.CTkButton(
+            self.camera_shots_frame,
+            text="Mid",
+            width=80,
+            height=36,
+            corner_radius=10,
+            command=lambda: self.set_camera_shot("mid"),
+        ).pack(side="left", padx=6, pady=6)
+
+        ctk.CTkButton(
+            self.camera_shots_frame,
+            text="Close Up",
+            width=80,
+            height=36,
+            corner_radius=10,
+            command=lambda: self.set_camera_shot("closeup"),
+        ).pack(side="left", padx=6, pady=6)
 
         # Add color filters
         self.colorFilterControls = ctk.CTkFrame(self.center, corner_radius=16)
@@ -489,7 +522,7 @@ class MovieDirectorGUI(ctk.CTk):
                 width=52,
                 height=52,
                 corner_radius=14,
-                command=self.pause_recording_placeholder,
+                command=self.pause_recording,
             )
             self.pause_button.pack(side="left", padx=6)
         except Exception as e:
@@ -500,7 +533,7 @@ class MovieDirectorGUI(ctk.CTk):
                 width=52,
                 height=52,
                 corner_radius=14,
-                command=self.pause_recording_placeholder,
+                command=self.pause_recording,
             )
             self.pause_button.pack(side="left", padx=6)
 
@@ -680,7 +713,7 @@ class MovieDirectorGUI(ctk.CTk):
             self._latest_frame_bgr = frame.copy()
             self._latest_frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-            if self.is_recording and self.video_writer is not None:
+            if self.is_recording and not self.is_paused and self.video_writer is not None:
                 try:
                     self.video_writer.write(frame)
                 except Exception as e:
@@ -718,10 +751,16 @@ class MovieDirectorGUI(ctk.CTk):
 
     def _update_recording_timer(self):
         if self.is_recording and self.record_start_time is not None:
-            elapsed = int(time.time() - self.record_start_time)
+            if self.is_paused:
+                elapsed = int(self.record_elapsed)
+            else:
+                elapsed = int(self.record_elapsed + (time.time() - self.record_start_time))
             mins = elapsed // 60
             secs = elapsed % 60
-            self.timer_label.configure(text=f"● REC  {mins:02d}:{secs:02d}")
+            if self.is_paused:
+                self.timer_label.configure(text=f"⏸ PAUSED  {mins:02d}:{secs:02d}", fg_color="#8B8000")
+            else:
+                self.timer_label.configure(text=f"● REC  {mins:02d}:{secs:02d}", fg_color="#8B0000")
             self.timer_label.place(relx=0.5, rely=0.03, anchor="n")
         else:
             self.timer_label.place_forget()
@@ -769,6 +808,8 @@ class MovieDirectorGUI(ctk.CTk):
             return
 
         self.is_recording = True
+        self.is_paused = False
+        self.record_elapsed = 0.0
         self.record_start_time = time.time()
         self.video_name_entry.delete(0, "end")
         self.set_status("Recording started")
@@ -780,7 +821,9 @@ class MovieDirectorGUI(ctk.CTk):
             return
 
         self.is_recording = False
+        self.is_paused = False
         self.record_start_time = None
+        self.record_elapsed = 0.0
 
         if self.video_writer is not None:
             self.video_writer.release()
@@ -791,8 +834,23 @@ class MovieDirectorGUI(ctk.CTk):
         self.after(3000, lambda: self.set_status(""))
         print("Stopped recording:", self.recording_filename)
 
-    def pause_recording_placeholder(self):
-        self.set_status("Pause not implemented yet")
+    def pause_recording(self):
+        if not self.is_recording:
+            self.set_status("Not currently recording")
+            return
+
+        if self.is_paused:
+            # Resume: restart the segment timer
+            self.is_paused = False
+            self.record_start_time = time.time()
+            self.set_status("Recording resumed")
+            print("Recording resumed")
+        else:
+            # Pause: accumulate elapsed time from the current segment
+            self.record_elapsed += time.time() - self.record_start_time
+            self.is_paused = True
+            self.set_status("Recording paused")
+            print("Recording paused")
 
     def get_recordings(self):
         files = []
@@ -1067,6 +1125,15 @@ class MovieDirectorGUI(ctk.CTk):
     def on_left_action(self, idx):
         print("Left button", idx)
 
+        if idx == 0:  # Camera shot presets
+            self.showCameraShots = not self.showCameraShots
+            if self.showCameraShots:
+                self.camera_shots_frame.place(relx=0.5, rely=0.9, anchor='center')
+                print("open camera shots")
+            else:
+                self.camera_shots_frame.place_forget()
+                print("close camera shots")
+
         if idx == 2:  # Zoom button
             self.showZoom = not self.showZoom
             if self.showZoom:
@@ -1084,6 +1151,18 @@ class MovieDirectorGUI(ctk.CTk):
             else:
                 print("close autofocus slider")
                 self.AF_slider.place_forget()
+
+    def set_camera_shot(self, shot_type):
+        zoom_map = {"wide": 1.0, "mid": 3.0, "closeup": 6.0}
+        zoom_val = zoom_map.get(shot_type, 1.0)
+
+        state = "+" if zoom_val > self.current_zoomvalue else "-"
+        self.current_zoomvalue = zoom_val
+        self.zoom_slider.set(zoom_val)
+        self.sendMessage(f"zoom:{zoom_val}:{state}")
+        self.set_status(f"Camera: {shot_type.replace('closeup', 'close up')}")
+        self.after(2000, lambda: self.set_status(""))
+        print(f"Camera shot: {shot_type} -> zoom {zoom_val}")
 
     def AfManual(self, value):
         time.sleep(0.05)
