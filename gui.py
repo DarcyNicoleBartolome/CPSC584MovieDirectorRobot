@@ -641,6 +641,10 @@ class MovieDirectorGUI(ctk.CTk):
 
     def set_status(self, message):
         self.status_label.configure(text=message)
+        if message:
+            self.status_label.place(relx=0.5, rely=0.10, anchor="n")
+        else:
+            self.status_label.place_forget()
 
     def _reader_loop(self):
         while not self._stop.is_set():
@@ -754,7 +758,8 @@ class MovieDirectorGUI(ctk.CTk):
 
         saved_name = os.path.basename(self.recording_filename) if self.recording_filename else "video"
         self.set_status(f"Saved: {saved_name}")
-        print("Saved recording:", self.recording_filename)
+        self.after(3000, lambda: self.set_status(""))
+        print("Stopped recording:", self.recording_filename)
 
     def pause_recording_placeholder(self):
         self.set_status("Pause not implemented yet")
