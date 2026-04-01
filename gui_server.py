@@ -24,7 +24,7 @@ import subprocess
 # !! TODO LOOK AT CHUNKS IN AUDIO AND SUCH!!!!
 
 # !! Change into the Robot's IP when testing with the group5 SD card
-HOST = "172.17.10.218" # Raspy's with CPSC584 wifi
+HOST = "172.17.10.222" # Raspy's with CPSC584 wifi
 PORT = 5001
 
 crawler = Picrawler()
