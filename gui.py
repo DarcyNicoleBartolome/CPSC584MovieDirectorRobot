@@ -59,6 +59,7 @@ WAVE_OUTPUT_FILENAME = "output.wav"
 
 # !! Change into the Robot's IP when testing with the group5 SD card
 SERVER_HOST = "172.17.10.222" # Raspy's with CPSC584 wifi
+# SERVER_HOST = "172.17.10.159" # Raspy's with CPSC584 wifi
 # SERVER_HOST = "10.0.0.116" # localhost
 SERVER_PORT = 5001
 
@@ -95,9 +96,6 @@ class MovieDirectorGUI(ctk.CTk):
                         rate=RATE,
                         input=True,
                         frames_per_buffer=CHUNK)
-        
-        # For Autofocus
-        self.setAfManual = False
 
         # Layout
         self.grid_rowconfigure(0, weight=1)
@@ -114,10 +112,17 @@ class MovieDirectorGUI(ctk.CTk):
         self.showZoom = False
         self.current_zoomvalue = 1
         
+        # auto tracking states
+        self.manualMove = True
+        self.trucking = False
+        self.tracking = False
+        self.rotate_track = False
+        self.symmetry = False
         
         # Left side icons: camera, focus, zoom
-        left_icons = ["icons/camera.png", "icons/focus2.png", "icons/zoom.png", "icons/autofocus.png", "icons/colorFilter.png", "icons/joystick.png", "icons/lock.png"]
+        left_icons = ["icons/camera.png", "icons/focus2.png", "icons/zoom.png", "icons/tracking.png", "icons/trucking.png", "icons/rotational_tracking.png", "icons/joystick.png"]
         left_photos = []
+        self.left_buttons = []
         
         for i, icon in enumerate(left_icons):
             try:
@@ -127,15 +132,21 @@ class MovieDirectorGUI(ctk.CTk):
                 icon_photo = ImageTk.PhotoImage(icon_img)
                 left_photos.append(icon_photo)
                 
-                ctk.CTkButton(
+                left_button = ctk.CTkButton(
                     self.left, 
                     image=icon_photo,
                     text="",
                     width=52, 
                     height=52, 
-                    corner_radius=14,
-                    command=lambda idx=i: self.on_left_action(idx),
-                ).grid(row=i, column=0, padx=12, pady=(12 if i == 0 else 10, 0))
+                    corner_radius=14
+                )
+                
+                left_button.configure(command=lambda btn=left_button, idx=i: self.on_left_action(idx, btn))
+                # left_button.configure(command=lambda btn=left_button, idx=i: self.updatebutton(btn, idx))
+                # self.updatebutton(left_button, i)
+
+                left_button.grid(row=i, column=0, padx=12, pady=(12 if i == 0 else 10, 0))
+                
             except Exception as e:
                 print(f"Error loading {icon}: {e}")
                 ctk.CTkButton(
@@ -144,8 +155,10 @@ class MovieDirectorGUI(ctk.CTk):
                     width=52, 
                     height=52, 
                     corner_radius=14,
-                    command=lambda idx=i: self.on_left_action(idx),
+                    command=lambda idx=i: self.on_left_action(idx, left_button),
                 ).grid(row=i, column=0, padx=12, pady=(12 if i == 0 else 10, 0))
+                
+            self.left_buttons.append(left_button)
         
         self.left_photos = left_photos  # Keep references
 
@@ -216,17 +229,6 @@ class MovieDirectorGUI(ctk.CTk):
                 command=lambda value=i: self.zoom_value(value)
             )
         self.zoom_slider.set(self.current_zoomvalue)
-        
-        self.AF_slider = ctk.CTkSlider(
-                self.center,
-                from_=0,
-                # from_=0.55, to=2.75, digits = 3, resolution = 0.01  #!! Find a way to may it float
-                to=10,
-                # fg_color=,
-                # number_of_steps=10,
-                command=lambda value=i: self.AfManual(value)
-            )
-        self.AF_slider.set(0)
         
         # Add color filters
         self.colorFilterControls = ctk.CTkFrame(self.center, corner_radius=16)
@@ -572,9 +574,11 @@ class MovieDirectorGUI(ctk.CTk):
             # threading.Thread(target=mediapipe_test, args=(self.cap,), daemon=True).start()
         
         # Initialize PoseLandmarker once
-        base_options = python.BaseOptions(model_asset_path='pose_landmarker_full.task')
+        base_options = python.BaseOptions(model_asset_path='pose_landmarker_lite.task')
         options = vision.PoseLandmarkerOptions(
             base_options=base_options,
+            min_pose_detection_confidence = 0.5,
+            min_pose_presence_confidence=0.5,
             output_segmentation_masks=False)
         self.pose_detector = vision.PoseLandmarker.create_from_options(options)
             
@@ -639,29 +643,37 @@ class MovieDirectorGUI(ctk.CTk):
             # print(w, h)
 
             # Process the detection result and draw landmarks
-            annotated_image = draw_landmarks_on_image(mp_image.numpy_view(), detection_result)
+            # annotated_image = draw_landmarks_on_image(mp_image.numpy_view(), detection_result)
+            annotated_image = np.copy(mp_image.numpy_view())
             
             # cv2.circle(annotated_image, (w, h), 75, (255, 0, 0), 10)
             # cv2.circle(annotated_image, (int(w/2), int(h/2)), 25, (255, 0, 0), 10)
             
+            cv2.circle(annotated_image, (int(w/3), int(h/3)), 15, (255, 0, 0), 10)
+            cv2.circle(annotated_image, (int(w/3)*2, int(h/3)), 15, (255, 0, 0), 10)
+            
+            cv2.circle(annotated_image, (int(w/3), int(h/3)*2), 15, (255, 0, 0), 10)
+            cv2.circle(annotated_image, (int(w/3)*2, int(h/3)*2), 15, (255, 0, 0), 10)
+            
             # 5 lines
-            cv2.line(annotated_image, (int(w/5), 0), (int(w/5), h), (0, 255, 0), 3)
-            cv2.line(annotated_image, (int(w/5)*2, 0), (int(w/5)*2, h), (0, 255, 0), 3)
-            cv2.line(annotated_image, (int(w/5)*3, 0), (int(w/5)*3, h), (0, 255, 0), 3)
-            cv2.line(annotated_image, (int(w/5)*4, 0), (int(w/5)*4, h), (0, 255, 0), 3)
+            # cv2.line(annotated_image, (int(w/5), 0), (int(w/5), h), (0, 255, 0), 3)
+            # cv2.line(annotated_image, (int(w/5)*2, 0), (int(w/5)*2, h), (0, 255, 0), 3)
+            # cv2.line(annotated_image, (int(w/5)*3, 0), (int(w/5)*3, h), (0, 255, 0), 3)
+            # cv2.line(annotated_image, (int(w/5)*4, 0), (int(w/5)*4, h), (0, 255, 0), 3)
             
             # # Rule of thirds line
-            # cv2.line(annotated_image, (int(w/3), 0), (int(w/3), h), (0, 255, 0), 3)
-            # cv2.line(annotated_image, (int(w/3)*2, 0), (int(w/3)*2, h), (0, 255, 0), 3)
-            # cv2.line(annotated_image, (0, int(h/3)), (w, int(h/3)), (0, 255, 0), 3)
-            # cv2.line(annotated_image, (0, int(h/3)*2), (w, int(h/3)*2), (0, 255, 0), 3)
-            
-
+            cv2.line(annotated_image, (int(w/3), 0), (int(w/3), h), (0, 255, 0), 3)
+            cv2.line(annotated_image, (int(w/3)*2, 0), (int(w/3)*2, h), (0, 255, 0), 3)
+            cv2.line(annotated_image, (0, int(h/3)), (w, int(h/3)), (0, 255, 0), 3)
+            cv2.line(annotated_image, (0, int(h/3)*2), (w, int(h/3)*2), (0, 255, 0), 3)
 
             # Convert to PhotoImage for Tkinter display
             annotated_image_pil = Image.fromarray(annotated_image)
             annotated_imgtk = ImageTk.PhotoImage(annotated_image_pil)
             
+            # Convert to PhotoImage for Tkinter display
+            annotated_image_pil = Image.fromarray(annotated_image)
+            annotated_imgtk = ImageTk.PhotoImage(annotated_image_pil)
             
             
             self.video_label.configure(image=annotated_imgtk)
@@ -678,7 +690,7 @@ class MovieDirectorGUI(ctk.CTk):
             self.destroy()
 
     # callbacks
-    def on_left_action(self, idx):
+    def on_left_action(self, idx, button):
         print("Left button", idx)
         
         if idx == 2: # Zoom button is clicked
@@ -691,28 +703,37 @@ class MovieDirectorGUI(ctk.CTk):
                 print("close zoom slider")
                 # self.zoom_slider.configure(state="disabled")
                 self.zoom_slider.place_forget()
-            
                 
-        if idx == 3: # If Autofocus is clicked
-            # Right now test the manual len position
-            self.setAfManual = not self.setAfManual
-            if self.setAfManual:
-                print("open autofocus slider")
-                self.AF_slider.place(relx=0.5, rely=0.9, relwidth=0.7, relheight=0.06, anchor='center')
+        elif idx == 3:  
+            self.toggleTracking()
+            if self.tracking:
+                button.configure(fg_color="green")
             else:
-                print("close autofocus slider")
-                # self.zoom_slider.configure(state="disabled")
-                self.AF_slider.place_forget()
+                button.configure(fg_color="blue")
             
-    def AfManual(self, value):
-        time.sleep(0.05)
-        print("Lens position: ", value)
-        # state = "+"
-        # if value < self.current_zoomvalue:
-        #     state = "-"
-        # self.current_zoomvalue = value
-        self.sendMessage(f"autofocus:{value}")
+        elif idx == 4:  
+            self.toggleTrucking()
+            if self.trucking:
+                button.configure(fg_color="green")
+            else:
+                button.configure(fg_color="blue")
+            
+        elif idx == 5:  
+            self.toggleRotateTrack()
+            if self.rotate_track:
+                button.configure(fg_color="green")
+            else:
+                button.configure(fg_color="blue")    
         
+        elif idx == 6:  
+            self.toggleManual()
+            if self.manualMove:
+                button.configure(fg_color="green")
+            else:
+                button.configure(fg_color="blue")
+                
+        self.updatebutton(button, idx)
+            
     def process_result(self, detection_result, w, h):
         get_body = detection_result.pose_landmarks
         list = []
@@ -733,54 +754,51 @@ class MovieDirectorGUI(ctk.CTk):
         
         left_hx = float(result[23].x * w)
         list.append(left_hx)
-        # left_hy = float(result[23].y - (h))
         
-        # Convert to percentage offset
-        # right_sx /= float(w/2)
-        # right_sy /= float(h/2)
-        
-        # left_sx /= float(w/2)
-        # left_sy /= float(h/2)
-        
-        # right_hx /= float(w)
-        # right_hy /= float(h)
-        
-        # left_hx /= float(w)
-        # left_hy /= float(h)
-        
-        # print(right_sx)
-        # print(right_sy)
-        # print(left_sx)
-        # print(left_sy)
-        # print(right_hx)
-        # print(right_hy)
-        # print(left_hx)
-        # print(left_hy)
-        
-        # Source - https://stackoverflow.com/a/10285205
-# Posted by ninjagecko, modified by community. See post 'Timeline' for change history
-# Retrieved 2026-03-30, License - CC BY-SA 4.0
+        if self.trucking:
+            self.autoTrucking(left_sx, right_sx)
+        elif self.tracking:
+            self.autoTracking(list, w)
+        elif self.rotate_track:
+            self.autoRotate(list, w)
+    
 
-        # !! if tracking is on TRACKING
-        # Move left if atleast 2 points of the torso is at w/5 at the left of the screen
-        # if sum(2 for x in list if x < w/5) >= 2:
-        #     self.sendMessage(f"move:left")
+    def autoTracking(self, list, w):
+        # !! IDEA: PROVIDE OPTIONS ON THE BOUNDARY LINE IT WILL MOVE
         
-        # Move right if atleast 2 points of the torso is at w/5 at the right of the screen
-        # if sum(2 for x in list if x > w/5*4) >= 2:
-        #     self.sendMessage(f"move:right")
+            # Move left if atleast 2 points of the torso is at w/5 at the left of the screen
+            if sum(2 for x in list if x < w/5) >= 2:
+                self.sendMessage(f"move:left")
+        
+            # Move right if atleast 2 points of the torso is at w/5 at the right of the screen
+            if sum(2 for x in list if x > w/5*4) >= 2:
+                self.sendMessage(f"move:right")
 
-        # !! TRUCKING
+    def autoTrucking(self, left_sx, right_sx):
         # Move forward if shoulders are too far
-        # if (abs(left_sx-right_sx) < 80):
-        #     self.sendMessage(f"move:up")
+        if (abs(left_sx-right_sx) < 100):
+            self.sendMessage(f"move:up")
         
         # !! RULE OF THIRDS
         # print(abs(left_sx-right_sx))
         
+    def autoRotate(self, list, w):
+        # Move left if atleast 2 points of the torso is at w/5 at the left of the screen
+        if sum(2 for x in list if x < w/5) >= 2:
+            self.sendMessage(f"move:rotate left")
+            time.sleep(1)
+    
+        # Move right if atleast 2 points of the torso is at w/5 at the right of the screen
+        if sum(2 for x in list if x > w/5*4) >= 2:
+            self.sendMessage(f"move:rotate right")
+            time.sleep(1)
+        
         # !! SYMMETRY
-        # if (right_sx > int(w/5)*2
-        #     and (left_sx < int(w/5)*3)):
+    def autoSymmetry(self, right_sx, left_sx, w):
+        if self.symmetry:
+            if (right_sx > int(w/5)*2
+                and (left_sx < int(w/5)*3)):
+                pass
 
         
         ## !! NONE FOR NOW
@@ -797,6 +815,9 @@ class MovieDirectorGUI(ctk.CTk):
         
 
     def on_right_action(self, idx):
+        if idx == 3: # If rule of thirds is clicked
+            pass
+            
         print("Right button", idx)
         
     def zoom_value(self, value):
@@ -864,6 +885,58 @@ class MovieDirectorGUI(ctk.CTk):
             
         except Exception as e: # If other Exception error detected, print out the error and close the chatroom window after half a second
             print(f"Error found while sending the message: {e}")
+            
+    def toggleTracking(self):
+        if not self.tracking:
+            self.tracking = True
+            self.trucking = False
+            self.manualMove = False
+            self.rotate_track = False
+        else:
+            self.tracking = False
+        
+    def toggleTrucking(self):
+        if not self.trucking:
+            self.tracking = False
+            self.trucking = True
+            self.manualMove = False
+            self.rotate_track = False
+        else:
+            self.trucking = False
+            
+    def toggleRotateTrack(self):
+        if not self.trucking:
+            self.tracking = False
+            self.trucking = False
+            self.manualMove = False
+            self.rotate_track = True
+        else:
+            self.rotate_track = False
+        
+    def toggleManual(self):
+        if not self.manualMove:
+            self.tracking = False
+            self.trucking = False
+            self.manualMove = True
+            self.rotate_track = False
+        else:
+            self.manualMove = False
+            
+    def updatebutton(self, button, idx):
+        # --- GROUP 1: index 0,1,2 (independent toggles) ---
+        # if idx in [0, 1, 2]:
+        #     current = button.cget("fg_color")
+        #     new_color = "blue" if current != "blue" else "gray"
+        #     button.configure(fg_color=new_color)
+
+        # --- GROUP 2: index 3,4,5 (only one active) ---
+        if idx in [3, 4, 5, 6]:
+            for i, btn in enumerate(self.left_buttons):
+                if i in [3, 4, 5, 6]:
+                    if btn != button:
+                        btn.configure(fg_color="blue")  # active one
+                    # else:
+                    #     btn.configure(fg_color="gray")   # reset others
         
 def start_client():
     """ Start the client and connect to the server. """

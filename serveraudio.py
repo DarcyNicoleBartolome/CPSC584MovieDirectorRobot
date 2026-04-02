@@ -9,7 +9,8 @@ import pyaudio
 # HOST = socket.gethostname()
 # !! Change into the Robot's IP when testing with the group5 SD card
 # HOST = "172.17.10.218" # Raspy's with CPSC584 wifi
-HOST = "127.0.0.1" # localhost
+HOST = "172.17.10.159" # Raspy's with CPSC584 wifi
+# HOST = "127.0.0.1" # localhost
 PORT = 5001
 
 # Audio

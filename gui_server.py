@@ -249,10 +249,9 @@ def move_sideLeft(speed, current):
          print(coord)
       leg_mode = 1
    else:     
-      for coord in left_frontleg_move:
-         crawler.do_step(coord, speed)
-         # sleep(1)
-         print(coord)
+      for coord in left_backleg_move:
+         mod_coord = apply_look_up(coord)
+         crawler.do_step(mod_coord, speed)
       leg_mode = 0
    
    
@@ -270,10 +269,10 @@ def move_sideRight(speed, current):
       [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_START, X_DEFAULT, Z_DEFAULT],[Y_START, X_TURN, Z_UP]], 
       
       # move the right rear leg to the left
-      [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_START, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT*2.5, X_DEFAULT, Z_UP]],
+      [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_START, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT*2.5, X_DEFAULT, Z_DEFAULT]],
       
       # Put down the right rear leg
-      [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_START, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT*2.5, X_DEFAULT,Z_DEFAULT]],
+      [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_START, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT*2.5, X_DEFAULT, Z_DEFAULT]],
       
       # Move the rest legs to the leg
       [[X_START, Y_DEFAULT, Z_DEFAULT], [Y_DEFAULT*2.5, X_DEFAULT, Z_DEFAULT], [Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT]],
@@ -345,6 +344,26 @@ def lookUp(speed, current):
 
    for coord in coords:
       crawler.do_step(coord, speed)
+      
+def apply_look_up(coord):
+    # coord = [[RF], [LF], [LR], [RR]]
+    
+    LOOK_OFFSET_FRONT = -20   # front legs go lower
+    LOOK_OFFSET_REAR  = +10   # rear legs go higher
+    
+    new_coord = []
+    
+    for i, leg in enumerate(coord):
+        y, x, z = leg
+        
+        if i in [0, 1]:  # front legs
+            z += LOOK_OFFSET_FRONT
+        else:            # rear legs
+            z += LOOK_OFFSET_REAR
+        
+        new_coord.append([y, x, z])
+    
+    return new_coord
 
 
 def lookDown(speed, current):
