@@ -840,7 +840,7 @@ class MovieDirectorGUI(ctk.CTk):
         elif self.ruleofthirds:
             self.autoRuleofThirds(list, w)
         elif self.symmetry:
-            self.autoSymmetry(right_sx, left_sx, right_sy, left_sy, right_hx, left_hx, left_hy, right_hy, w)
+            self.autoSymmetry(right_sx, left_sx, w)
         
     
 
@@ -878,7 +878,7 @@ class MovieDirectorGUI(ctk.CTk):
         # if 
         pass
         # !! SYMMETRY
-    def autoSymmetry(self, right_sx, left_sx, right_sy, left_sy, right_hx, left_hx, left_hy, right_hy, w):
+    def autoSymmetry(self, right_sx, left_sx, w):
         if self.symmetry:
             shoulder_length = abs(left_sx-right_sx)
             # middle_length = abs((w/5)*3 - (w/5)*2)
@@ -886,27 +886,16 @@ class MovieDirectorGUI(ctk.CTk):
             # ratio = shoulder_length / middle_length
             # print(ratio)
             
-            percentage_rightShoulder = max(0, min(100, (right_sx * 5 / (2 * w)) * 100))
-            percentage_leftShoulder = max(0, min(100, ((w - left_sx) / (2 * w / 5)) * 100))
+            percentage_rightShoulder = max(0, min(100, (right_sx * 2 / (1 * w)) * 100))
+            percentage_leftShoulder = max(0, min(100, ((w - left_sx) / (1 * w / 2)) * 100))
             print(percentage_rightShoulder, percentage_leftShoulder)
             
-            if percentage_rightShoulder < 50:
+            if percentage_rightShoulder < 70:
+                self.sendMessage(f"move:left")
                 print(f"move:left")
-            if percentage_leftShoulder < 50:
+            if percentage_leftShoulder < 70:
+                self.sendMessage(f"move:right")
                 print(f"move:right")
-                
-            
-            # if (right_sx > (w/5)*2
-            #     and (left_sx > int(w/5)*3)):
-                # self.sendMessage(f"move:right")
-                # print(f"move:right")
-                
-            # elif (right_sx < (w/5)*2
-            #     and (left_sx < (w/5)*3)):
-                # self.sendMessage(f"move:left")
-                # print(f"move:left")
-                
-
         
         ## !! NONE FOR NOW
             # if (right_sx < 0.1 or right_sy < 0.1 or left_sx < 0.1 or left_sy < 0.1 or right_hx < 0.1 or right_hy < 0.1 or 
@@ -958,6 +947,7 @@ class MovieDirectorGUI(ctk.CTk):
     def directorSpeaker(self):
         self.setSpeaker = not self.setSpeaker
         print(f"set speaker: {self.setSpeaker}") 
+        print(f"speaker is set: {self.send_audio_event.is_set()}") 
         
         if self.send_audio_event.is_set():
             self.send_audio_event.clear()
