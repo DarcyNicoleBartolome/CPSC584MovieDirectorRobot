@@ -453,6 +453,7 @@ def process_request(data, client_socket, client_address):
    
    while "\n" in request_data:
       message, request_data = request_data.split("\n", 1)
+      print("process request", message)
       
       if not message:
          continue
