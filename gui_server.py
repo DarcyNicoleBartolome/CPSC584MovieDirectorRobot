@@ -459,7 +459,7 @@ def process_request(data, client_socket, client_address):
          continue
    
       # parse the message
-      message = request_data.split(':')
+      message = message.split(':')
 
       if message[0] == "move":
          if 'left' == message[1]: # move sideway left
