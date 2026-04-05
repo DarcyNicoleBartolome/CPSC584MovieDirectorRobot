@@ -67,8 +67,6 @@ SERVER_PORT = 5001
 AUD_PORT = 5002
 
 
-# !! TODO LOOK AT CHUNKS IN AUDIO AND SUCH!!!!
-
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
@@ -789,7 +787,7 @@ class MovieDirectorGUI(ctk.CTk):
                 self.trucking_options.place_forget()
                 self.tracking_options.place(relx=0.5, rely=0.9, anchor='center')
             else:
-                button.configure(fg_color="blue")
+                button.configure(fg_color=("#3B8ED0", "#1F6AA5"))
                 self.tracking_options.place_forget()
             
         elif idx == 4:
@@ -803,7 +801,7 @@ class MovieDirectorGUI(ctk.CTk):
                 self.trucking_options.place(relx=0.5, rely=0.9, anchor='center')
                 
             else:
-                button.configure(fg_color="blue")
+                button.configure(fg_color=("#3B8ED0", "#1F6AA5"))
                 self.trucking_options.place_forget()
 
         
@@ -816,7 +814,7 @@ class MovieDirectorGUI(ctk.CTk):
                 self.trucking_options.place_forget()
                 self.showZoom = False
             else:
-                button.configure(fg_color="blue")
+                button.configure(fg_color=("#3B8ED0", "#1F6AA5"))
                 
         self.updateLeftbutton(button, idx)
             
@@ -842,6 +840,13 @@ class MovieDirectorGUI(ctk.CTk):
         list.append(left_hx)
         left_hy = float(result[23].y * h)
         
+        if not hasattr(self, "last_auto_time"):
+            self.last_auto_time = 0
+            self.last_direction = None
+
+        now = time.time()
+        if now - self.last_auto_time < 1.5:
+            return
         
         if self.forwardTrucking:
             self.autoTrucking(left_sx, right_sx)
@@ -861,41 +866,74 @@ class MovieDirectorGUI(ctk.CTk):
     
 
     def autoTracking(self, list, w):
-        # !! IDEA: PROVIDE OPTIONS ON THE BOUNDARY LINE IT WILL MOVE
-        
-            # Move left if atleast 2 points of the torso is at w/5 at the left of the screen
-            if sum(2 for x in list if x < w/5) >= 2:
-                self.sendMessage(f"move:left")
-        
-            # Move right if atleast 2 points of the torso is at w/5 at the right of the screen
-            if sum(2 for x in list if x > w/5*4) >= 2:
-                self.sendMessage(f"move:right")
+        if not hasattr(self, "last_auto_time"):
+            self.last_auto_time = 0
+            self.last_direction = None
+
+        now = time.time()
+        if now - self.last_auto_time < 1.5:
+            return
+        # Move left if atleast 2 points of the torso is at w/5 at the left of the screen
+        if sum(1 for x in list if x < w/5) >= 2:
+            self.sendMessage(f"move:left")
+    
+        # Move right if atleast 2 points of the torso is at w/5 at the right of the screen
+        if sum(1 for x in list if x > w/5*4) >= 2:
+            self.sendMessage(f"move:right")
                 
     
 
     def autoTrucking(self, left_sx, right_sx):
+        if not hasattr(self, "last_auto_time"):
+            self.last_auto_time = 0
+            self.last_direction = None
+
+        now = time.time()
+        if now - self.last_auto_time < 1.5:
+            return
         # Move forward if shoulders are too far
         if (abs(left_sx-right_sx) < 100):
             self.sendMessage(f"move:up")
         
     def autoBackwardtrucking(self, left_sx, right_sx):
+        if not hasattr(self, "last_auto_time"):
+            self.last_auto_time = 0
+            self.last_direction = None
+
+        now = time.time()
+        if now - self.last_auto_time < 1.5:
+            return
         # Move backward if shoulders are too close
         # print(abs(left_sx-right_sx))
         if (abs(left_sx-right_sx) > 120):
             self.sendMessage(f"move:down")
         
     def autoRotate(self, list, w):
+        if not hasattr(self, "last_auto_time"):
+            self.last_auto_time = 0
+            self.last_direction = None
+
+        now = time.time()
+        if now - self.last_auto_time < 1.5:
+            return
         # Move left if atleast 2 points of the torso is at w/5 at the left of the screen
-        if sum(2 for x in list if x < w/5) >= 2:
+        if sum(1 for x in list if x < w/5) >= 2:
             self.sendMessage(f"move:rotate left")
             time.sleep(1)
     
         # Move right if atleast 2 points of the torso is at w/5 at the right of the screen
-        if sum(2 for x in list if x > w/5*4) >= 2:
+        if sum(1 for x in list if x > w/5*4) >= 2:
             self.sendMessage(f"move:rotate right")
             time.sleep(1)
         
     def autoRuleofThirds(self, list, left_sx, right_sx, right_hx, left_hx, w):
+        if not hasattr(self, "last_auto_time"):
+            self.last_auto_time = 0
+            self.last_direction = None
+
+        now = time.time()
+        if now - self.last_auto_time < 1.5:
+            return
         # !! While loop until it is satisfied when subject is in one of the closest rule of thirds points
         mid_point_shoulder = abs((1-(1/2))*left_sx + (1/2)*right_sx)
         mid_point_hip = abs((1-(1/2))*left_hx + (1/2)*right_hx)
@@ -936,6 +974,13 @@ class MovieDirectorGUI(ctk.CTk):
         
         # !! SYMMETRY
     def autoSymmetry(self, right_sx, left_sx, w):
+        if not hasattr(self, "last_auto_time"):
+            self.last_auto_time = 0
+            self.last_direction = None
+
+        now = time.time()
+        if now - self.last_auto_time < 1.5:
+            return
         if self.symmetry:
             shoulder_length = abs(left_sx-right_sx)
             
@@ -946,16 +991,21 @@ class MovieDirectorGUI(ctk.CTk):
             if percentage_rightShoulder < 70:
                 self.sendMessage(f"move:left")
                 print(f"move:left")
-            if percentage_leftShoulder < 70:
+            elif percentage_leftShoulder < 70:
                 self.sendMessage(f"move:right")
                 print(f"move:right")
+            
+            self.symmetry = False
+                
+            time.sleep(2)
+                
 
     def repeat_action(self, count, move_cmd, zoom_step):
         def step(i):
             if i >= count:
                 return
 
-            self.sendMessage(move_cmd)
+            self.sendMessage(f"{move_cmd}\n")
 
             self.current_zoomvalue += zoom_step
             self.zoom_value(self.current_zoomvalue)
@@ -969,10 +1019,10 @@ class MovieDirectorGUI(ctk.CTk):
 
     def on_right_action(self, idx, button):
         if idx == 1:
-            self.repeat_action(5, "move:up", 0.05)
+            self.repeat_action(5, "move:up", -0.1)
 
         elif idx == 2:
-            self.repeat_action(3, "move:down", -0.05)
+            self.repeat_action(5, "move:down", 0.1)
                 
         
         if idx == 3: # If rule of thirds is clicked
@@ -988,7 +1038,7 @@ class MovieDirectorGUI(ctk.CTk):
             if self.symmetry:
                 button.configure(fg_color="green")
             else:
-                button.configure(fg_color="blue")
+                button.configure(fg_color=("#3B8ED0", "#1F6AA5"))
              
             
         print("Right button", idx)
@@ -1056,7 +1106,7 @@ class MovieDirectorGUI(ctk.CTk):
         
         try:
             # if the client did not send a command, send it to the server as a message the user want to broadcast to all users in the chatroom
-            self.client_socket.sendall(f"{message}\n".encode("utf-8"))
+            self.client_socket.sendall(message.encode("utf-8"))
             
         except Exception as e: # If other Exception error detected, print out the error and close the chatroom window after half a second
             print(f"Error found while sending the message: {e}")
@@ -1067,20 +1117,20 @@ class MovieDirectorGUI(ctk.CTk):
             if self.forwardTrucking:
                 print("Activate forward trucking")
                 self.forward_trucking.configure(fg_color="green")
-                self.backward_trucking.configure(fg_color="blue")
+                self.backward_trucking.configure(fg_color=("#3B8ED0", "#1F6AA5"))
             else:
                 print("Deactivate forward trucking")
-                self.forward_trucking.configure(fg_color="blue")
+                self.forward_trucking.configure(fg_color=("#3B8ED0", "#1F6AA5"))
                 
         elif option == "Back":
             self.toggleBackwardTrucking()
             if self.backwardTrucking:
                 print("Activate backward trucking")
                 self.backward_trucking.configure(fg_color="green")
-                self.forward_trucking.configure(fg_color="blue")
+                self.forward_trucking.configure(fg_color=("#3B8ED0", "#1F6AA5"))
             else:
                 print("Deactivate backward trucking")
-                self.backward_trucking.configure(fg_color="blue")
+                self.backward_trucking.configure(fg_color=("#3B8ED0", "#1F6AA5"))
         
     def set_tracking(self, option):
         if option == "Sideways":
@@ -1088,20 +1138,20 @@ class MovieDirectorGUI(ctk.CTk):
             if self.tracking:
                 print("Activate sideway tracking")
                 self.sideway_tracking.configure(fg_color="green")
-                self.rotate_tracking.configure(fg_color="blue")
+                self.rotate_tracking.configure(fg_color=("#3B8ED0", "#1F6AA5"))
             else:
                 print("Deactivate sideway tracking")
-                self.sideway_tracking.configure(fg_color="blue")
+                self.sideway_tracking.configure(fg_color=("#3B8ED0", "#1F6AA5"))
                 
         if option == "Rotate":
             self.toggleRotateTrack()
             if self.rotate_track:
                 print("Activate sideway tracking")
-                self.sideway_tracking.configure(fg_color="blue")
+                self.sideway_tracking.configure(fg_color=("#3B8ED0", "#1F6AA5"))
                 self.rotate_tracking.configure(fg_color="green")
             else:
                 print("Deactivate rotate tracking")
-                self.rotate_tracking.configure(fg_color="blue")
+                self.rotate_tracking.configure(fg_color=("#3B8ED0", "#1F6AA5"))
             
     
     def toggleTrackingOptions(self):
@@ -1112,24 +1162,24 @@ class MovieDirectorGUI(ctk.CTk):
             # self.manualMove = False
             self.rotate_track = False
             
-            self.sideway_tracking.configure(fg_color="blue")
-            self.rotate_tracking.configure(fg_color="blue")
+            self.sideway_tracking.configure(fg_color=("#3B8ED0", "#1F6AA5"))
+            self.rotate_tracking.configure(fg_color=("#3B8ED0", "#1F6AA5"))
         else:
             self.showTruckingOptions = False
-            self.backward_trucking.configure(fg_color="blue")
-            self.forward_trucking.configure(fg_color="blue")
+            self.backward_trucking.configure(fg_color=("#3B8ED0", "#1F6AA5"))
+            self.forward_trucking.configure(fg_color=("#3B8ED0", "#1F6AA5"))
             
     def toggleTruckingOptions(self):
         if not self.showTruckingOptions:
             self.forwardTrucking = False
             self.backwardTrucking = False
             
-            self.backward_trucking.configure(fg_color="blue")
-            self.forward_trucking.configure(fg_color="blue")
+            self.backward_trucking.configure(fg_color=("#3B8ED0", "#1F6AA5"))
+            self.forward_trucking.configure(fg_color=("#3B8ED0", "#1F6AA5"))
         else:
             self.showTrackingOptions = False
-            self.sideway_tracking.configure(fg_color="blue")
-            self.rotate_tracking.configure(fg_color="blue")
+            self.sideway_tracking.configure(fg_color=("#3B8ED0", "#1F6AA5"))
+            self.rotate_tracking.configure(fg_color=("#3B8ED0", "#1F6AA5"))
         
     def toggleForwardTrucking(self):
         if not self.forwardTrucking:
@@ -1186,14 +1236,14 @@ class MovieDirectorGUI(ctk.CTk):
             for i, btn in enumerate(self.left_buttons):
                 if i in [3, 4, 5]:
                     if btn != button:
-                        btn.configure(fg_color="blue")
+                        btn.configure(fg_color=("#3B8ED0", "#1F6AA5"))
                         
     def updateRightbutton(self, button, idx):
         if idx in [3, 4]:
             for i, btn in enumerate(self.right_buttons):
                 if i in [3, 4]:
                     if btn != button:
-                        btn.configure(fg_color="blue")
+                        btn.configure(fg_color=("#3B8ED0", "#1F6AA5"))
         
 def start_client():
     try:
