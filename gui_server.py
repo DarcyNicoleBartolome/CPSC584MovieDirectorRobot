@@ -383,52 +383,32 @@ def get_local_ip():
       return "Unknown"
    
 def start_server():
-   def accept_commands(server_socket):
-    while True:
-        client_socket, client_address = server_socket.accept()
-        print("Command client connected:", client_address)
-        threading.Thread(
-            target=handle_client,
-            args=(client_socket, client_address),
-            daemon=True
-        ).start()
-
-
-def accept_audio(aud_sock):
-    while True:
-        aud_conn, addr = aud_sock.accept()
-        print("Audio client connected:", addr)
-        threading.Thread(
-            target=handle_audio,
-            args=(aud_conn,),
-            daemon=True
-        ).start()
-
-
-def start_server():
-   # Command socket
-   server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-   server_socket.bind((HOST, PORT))
-   server_socket.listen(5)
-
    # Audio socket
    aud_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
    aud_sock.bind((HOST, AUD_PORT))
-   aud_sock.listen(5)
-
-   print(f"Command server on {HOST}:{PORT}")
-   print(f"Audio server on {HOST}:{AUD_PORT}")
-
-   threading.Thread(target=VideoStream, daemon=True).start()
-
-   # Start separate accept loops
-   threading.Thread(target=handle_client, args=(server_socket,), daemon=True).start()
-   threading.Thread(target=handle_audio, args=(aud_sock,), daemon=True).start()
-
-   # Main loop (robot control)
+   aud_sock.listen(1)
+   
+   """ Start the server and listen for incoming connections. """
+   server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+   server_socket.bind((HOST, PORT))
+   server_socket.listen(5)
+   print(f"Server started and listening on {HOST}:{PORT}")
+      
+   threading.Thread(target=VideoStream).start()
+      
    while True:
-      current_pose = crawler.current_step_all_leg_value()
-      crawler.do_step(current_pose, speed)
+         try:
+            # Accept new client connections and start a thread for each client
+            client_socket, client_address = server_socket.accept()
+            aud_conn, _ = aud_sock.accept()
+            
+            threading.Thread(target=handle_client, args=(client_socket, client_address)).start()
+            threading.Thread(target=handle_audio, args=(aud_conn,), daemon=True).start()
+         except Exception as e:
+            print(f"Error accepting connections: {e}")
+            
+         current_pose = crawler.current_step_all_leg_value()
+         crawler.do_step(current_pose, speed) # Attempt not avoid the robot to stay relaxed
                
 
 

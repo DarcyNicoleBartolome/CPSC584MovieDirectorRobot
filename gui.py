@@ -1161,25 +1161,40 @@ class MovieDirectorGUI(ctk.CTk):
                     #     btn.configure(fg_color="gray")   # reset others
         
 def start_client():
-    """ Start the client and connect to the server. """
     try:
+        # Create BOTH sockets first
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         aud_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        # Connect command FIRST (important for responsiveness)
+        client_socket.connect((SERVER_HOST, SERVER_PORT))
+        print("Connected to command server")
+
+        # Then connect audio
         aud_sock.connect((SERVER_HOST, AUD_PORT))
-        
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
-            
-            client_socket.connect((SERVER_HOST, SERVER_PORT))
-            # Setting up the GUI
-            app = MovieDirectorGUI(client_socket, aud_sock)
-            # Starts the Tkinter event loop to run and show the GUI
-            app.mainloop()
-    
-    except ConnectionRefusedError: # If connection error detected, print out the error
-        print(f"Connection to {SERVER_HOST}:{SERVER_PORT} failed. Ensure the server is running.")
-    
-    except Exception as e: # If other Exception error detected, print out the error
-        print(f"An error occurred while running the application: {e}")
-        print(f"You are forced to leave the chatroom... Please retry and come back again")
+        print("Connected to audio server")
+
+        # Start GUI
+        app = MovieDirectorGUI(client_socket, aud_sock)
+        app.mainloop()
+
+    except ConnectionRefusedError:
+        print(f"Connection to server failed. Is it running?")
+
+    except Exception as e:
+        print(f"Error: {e}")
+
+    finally:
+        # Clean shutdown
+        try:
+            client_socket.close()
+        except:
+            pass
+
+        try:
+            aud_sock.close()
+        except:
+            pass
 
 if __name__ == "__main__":
     start_client()
