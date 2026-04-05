@@ -61,9 +61,10 @@ WAVE_OUTPUT_FILENAME = "output.wav"
 # !! Change into the Robot's IP when testing with the group5 SD card
 # SERVER_HOST = "172.17.10.222" # Raspy's with CPSC584 wifi
 # SERVER_HOST = "172.17.10.159" # Raspy's with CPSC584 wifi
-SERVER_HOST = "10.0.0.162" # localhost
 SERVER_HOST = "10.0.0.116" # localhost
+SERVER_HOST = "10.0.0.162" # localhost
 SERVER_PORT = 5001
+AUD_PORT = 5001
 
 
 # !! TODO LOOK AT CHUNKS IN AUDIO AND SUCH!!!!
@@ -73,9 +74,10 @@ ctk.set_default_color_theme("blue")
 
 
 class MovieDirectorGUI(ctk.CTk):
-    def __init__(self, client_socket):
+    def __init__(self, client_socket, aud_socket):
         super().__init__()
         self.client_socket = client_socket
+        self.aud_socket = aud_socket
         
         self.title("Movie Director Miniature")
         self.geometry("1000x650")
@@ -86,8 +88,8 @@ class MovieDirectorGUI(ctk.CTk):
 
         # For video streaming
         self.stream_url = "http://172.17.10.222:8080/stream.mjpg"
-        self.stream_url = "http://10.0.0.162:8080/stream.mjpg"
         self.stream_url = "http://10.0.0.116:8080/stream.mjpg"
+        self.stream_url = "http://10.0.0.162:8080/stream.mjpg"
         project_dir = os.path.dirname(os.path.abspath(__file__))
         
         # # For audio streaming
@@ -199,7 +201,7 @@ class MovieDirectorGUI(ctk.CTk):
                     command=lambda idx=i: self.on_right_action(idx, right_button),
                 )
                 
-                right_button.configure(command=lambda btn=left_button, idx=i: self.on_right_action(idx, btn))
+                right_button.configure(command=lambda btn=right_button, idx=i: self.on_right_action(idx, btn))
                 right_button.grid(row=i, column=0, padx=12, pady=(12 if i == 0 else 10, 0))
                 
             except Exception as e:
@@ -213,7 +215,7 @@ class MovieDirectorGUI(ctk.CTk):
                     command=lambda idx=i: self.on_right_action(idx, right_button),
                 )
                 
-                right_button.configure(command=lambda btn=left_button, idx=i: self.on_right_action(idx, btn))
+                right_button.configure(command=lambda btn=right_button, idx=i: self.on_right_action(idx, btn))
                 right_button.grid(row=i, column=0, padx=12, pady=(12 if i == 0 else 10, 0))
         
         self.right_photos = right_photos  # Keep references
@@ -835,10 +837,12 @@ class MovieDirectorGUI(ctk.CTk):
             pass
         elif self.tracking:
             self.autoTracking(list, w)
+        elif self.backwardTrucking:
+            self.autoBackwardtrucking(list, w)
         elif self.rotate_track:
             self.autoRotate(list, w)
         elif self.ruleofthirds:
-            self.autoRuleofThirds(list, w)
+            self.autoRuleofThirds(list, left_sx, right_sx, right_hx, left_hx, w)
         elif self.symmetry:
             self.autoSymmetry(right_sx, left_sx, w)
         
@@ -854,14 +858,19 @@ class MovieDirectorGUI(ctk.CTk):
             # Move right if atleast 2 points of the torso is at w/5 at the right of the screen
             if sum(2 for x in list if x > w/5*4) >= 2:
                 self.sendMessage(f"move:right")
+                
+    
 
     def autoTrucking(self, left_sx, right_sx):
         # Move forward if shoulders are too far
         if (abs(left_sx-right_sx) < 100):
             self.sendMessage(f"move:up")
         
-        # !! RULE OF THIRDS
+    def autoBackwardtrucking(self, left_sx, right_sx):
+        # Move backward if shoulders are too close
         # print(abs(left_sx-right_sx))
+        if (abs(left_sx-right_sx) > 120):
+            self.sendMessage(f"move:down")
         
     def autoRotate(self, list, w):
         # Move left if atleast 2 points of the torso is at w/5 at the left of the screen
@@ -874,17 +883,46 @@ class MovieDirectorGUI(ctk.CTk):
             self.sendMessage(f"move:rotate right")
             time.sleep(1)
         
-    def autoRuleofThirds(self, list, w):
-        # if 
-        pass
+    def autoRuleofThirds(self, list, left_sx, right_sx, right_hx, left_hx, w):
+        # !! While loop until it is satisfied when subject is in one of the closest rule of thirds points
+        mid_point_shoulder = abs((1-(1/2))*left_sx + (1/2)*right_sx)
+        mid_point_hip = abs((1-(1/2))*left_hx + (1/2)*right_hx)
+        
+        # Move left if atleast 3 points of the torso is at w/5 at the left of the screen
+        if sum(1 for x in list if x < (w/5) * 2) > 2:
+            # Checks which torso is closer to one of the rule of thirds line (w/3)
+            check_leftLine = max(0, min(100, (mid_point_shoulder * 3 / (1 * w)) * 100)) 
+            check_rightLine = max(0, min(100, (mid_point_hip * 3 / (1 * w)) * 100)) 
+            print("move:left", check_leftLine, check_rightLine)
+            # while check_leftLine < 100 and check_rightLine < 100:
+            #     print(check_leftLine, check_rightLine)
+            #     self.sendMessage(f"move:left")
+            # self.ruleofthirds = False
+            return
+                
+        elif sum(1 for x in list if x > (w/5) * 3) > 2:
+            # Checks which torso is closer to one of the rule of thirds line (w/3)
+            check_leftLine = max(0, min(100, ((w - mid_point_shoulder) / (1 * w / 3)) * 100))
+            check_rightLine = max(0, min(100, ((w - mid_point_hip) / (1 * w / 3)) * 100))
+            print("move:right",check_leftLine, check_rightLine)
+            # while check_leftLine < 100 and check_rightLine < 100:
+            #     print(check_leftLine, check_rightLine)
+            #     self.sendMessage(f"move:right")
+            # self.ruleofthirds = False
+            
+        elif sum(1 for x in list if x > (w/5) * 2 and x < (w/5) * 3) >= 2:
+            print("subject on middle")
+            if abs(mid_point_shoulder - (w/3)) < abs(mid_point_shoulder - (w/3) * 2):
+                print("go left")
+                # while 
+            else:
+                print("go right!")
+        
+        
         # !! SYMMETRY
     def autoSymmetry(self, right_sx, left_sx, w):
         if self.symmetry:
             shoulder_length = abs(left_sx-right_sx)
-            # middle_length = abs((w/5)*3 - (w/5)*2)
-            # print(shoulder_length, middle_length)
-            # ratio = shoulder_length / middle_length
-            # print(ratio)
             
             percentage_rightShoulder = max(0, min(100, (right_sx * 2 / (1 * w)) * 100))
             percentage_leftShoulder = max(0, min(100, ((w - left_sx) / (1 * w / 2)) * 100))
@@ -896,29 +934,24 @@ class MovieDirectorGUI(ctk.CTk):
             if percentage_leftShoulder < 70:
                 self.sendMessage(f"move:right")
                 print(f"move:right")
-        
-        ## !! NONE FOR NOW
-            # if (right_sx < 0.1 or right_sy < 0.1 or left_sx < 0.1 or left_sy < 0.1 or right_hx < 0.1 or right_hy < 0.1 or 
-            #     left_hx < 0.1 or left_hy < 0.1):
-                
-            #     self.sendMessage(f"move:right")
-                
-            # elif (right_sx < 0.9 or right_sy < 0.9 or left_sx < 0.9 or left_sy < 0.9 or right_hx < 0.9 or right_hy < 0.9 or 
-            #     left_hx < 0.9 or left_hy < 0.9):
-                
-            #     self.sendMessage(f"move:left")
 
         
 
     def on_right_action(self, idx, button):
         if idx == 3: # If rule of thirds is clicked
             self.ruleofthirds = not self.ruleofthirds
-            
+            if self.ruleofthirds:
+                button.configure(fg_color="green")
+            else:
+                button.configure(fg_color="blue")
+                
             pass
         if idx == 4: # Center of attention is clicked
             self.symmetry = not self.symmetry
-            
-            pass
+            if self.symmetry:
+                button.configure(fg_color="green")
+            else:
+                button.configure(fg_color="blue")
              
             
         print("Right button", idx)
@@ -967,12 +1000,13 @@ class MovieDirectorGUI(ctk.CTk):
         print("Audio thread started")
 
         while True:
-            data = self.stream.read(CHUNK-4, exception_on_overflow=False) # Attempt removing 4 bytes for AUD:
+            data = self.stream.read(CHUNK, exception_on_overflow=False) # Attempt removing 4 bytes for AUD:
+            # data = self.stream.read(CHUNK, exception_on_overflow=False) # Attempt removing 4 bytes for AUD:
 
             if self.send_audio_event.is_set():
                 try:
                     # self.client_socket.sendall(b"AUD:" + data)
-                    self.client_socket.sendall(data)
+                    self.aud_socket.sendall(data)
                 except Exception as e:
                     print("Audio send error:", e)
                     break
@@ -1129,11 +1163,14 @@ class MovieDirectorGUI(ctk.CTk):
 def start_client():
     """ Start the client and connect to the server. """
     try:
+        aud_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        aud_sock.connect((SERVER_HOST, AUD_PORT))
+        
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
             
             client_socket.connect((SERVER_HOST, SERVER_PORT))
             # Setting up the GUI
-            app = MovieDirectorGUI(client_socket)
+            app = MovieDirectorGUI(client_socket, aud_sock)
             # Starts the Tkinter event loop to run and show the GUI
             app.mainloop()
     

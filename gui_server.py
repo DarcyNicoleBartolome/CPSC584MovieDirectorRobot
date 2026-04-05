@@ -27,6 +27,7 @@ import subprocess
 # HOST = "172.17.10.222" # Raspy's with CPSC584 wifi
 HOST = "10.0.0.116" # Raspy's with CPSC584 wifi
 PORT = 5001
+AUD_PORT = 5002
 
 crawler = Picrawler()
 speed = 90
@@ -61,7 +62,8 @@ stream = p.open(format=FORMAT,
                 channels=CHANNELS,
                 rate=RATE,
                 output=True,
-                frames_per_buffer=CHUNK-4) # -4 for AUD:
+                frames_per_buffer=CHUNK)
+               #  frames_per_buffer=CHUNK-4) # -4 for AUD:
 
 
 # Initialize picamera
@@ -360,6 +362,14 @@ def lookDown(speed, current):
     for coord in coords:
         crawler.do_step(coord, speed)
         
+def handle_audio(conn):
+    while True:
+        data = conn.recv(4096)
+        if not data:
+            break
+        print("Audio chunk:", len(data))
+        stream.write(data)
+        
 #endregion ######### Crawler Movement #########
 
 #region ######### Socket Programming / Start running the server #########
@@ -373,6 +383,10 @@ def get_local_ip():
       return "Unknown"
    
 def start_server():
+   # Audio socket
+   aud_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+   aud_sock.bind((HOST, AUD_PORT))
+   aud_sock.listen(1)
    
    """ Start the server and listen for incoming connections. """
    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
@@ -387,8 +401,10 @@ def start_server():
             try:
                # Accept new client connections and start a thread for each client
                client_socket, client_address = server_socket.accept()
+               aud_conn, _ = aud_sock.accept()
                
                threading.Thread(target=handle_client, args=(client_socket, client_address)).start()
+               threading.Thread(target=handle_audio, args=(aud_conn,), daemon=True).start()
             except Exception as e:
                print(f"Error accepting connections: {e}")
                
@@ -474,15 +490,15 @@ def process_request(data, client_socket, client_address):
       print("Zoom On") # Debug print
       zoom(message[1], message[2])
       
-   else: # Assume it's audio
-      audio_data = data
-      while audio_data != "":
-         try:
-               audio_data = client_socket.recv(4096)
-               stream.write(audio_data)
-         except socket.error:
-               print("Client Disconnected")
-               break
+   # else: # Assume it's audio
+   #    audio_data = data
+   #    while audio_data != "":
+   #       try:
+   #             audio_data = client_socket.recv(4096)
+   #             stream.write(audio_data)
+   #       except socket.error:
+   #             print("Client Disconnected")
+   #             break
    
    # elif data.startswith(b"AUD:"):
    #      audio_data = data[4:]
