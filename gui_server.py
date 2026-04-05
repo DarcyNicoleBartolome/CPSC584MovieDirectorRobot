@@ -452,7 +452,7 @@ def process_request(data, client_socket, client_address):
       return
    
    if "\n" not in request_data:
-      request_data = f"request_data\n"
+      request_data = request_data + "\n"
    
    while "\n" in request_data:
       message, request_data = request_data.split("\n", 1)
