@@ -425,7 +425,7 @@ def handle_client(client_socket, client_address):
          if not request_data:  # Client has closed the connection
             break
          # Print the received request from the client
-         # print(f"Received request: {request_data} from {client_address}")
+         print(f"Received request: {request_data} from {client_address}")
          
          # Here, the request is processed to determine the response
          process_request(request_data, client_socket, client_address)

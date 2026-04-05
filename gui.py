@@ -180,10 +180,12 @@ class MovieDirectorGUI(ctk.CTk):
         self.right.grid(row=0, column=2, padx=(10, 18), pady=(18, 10), sticky="ns")
         
         # Right side icons: goldenratio, and others to be added
-        right_icons = ["icons/goldenratio2.png", "icons/icon2.png", "icons/icon3.png", "icons/rule-of-thirds.png", "icons/center.png"]
+        right_icons = ["icons/goldenratio2.png", "icons/dolly.png", "icons/dolly.png", "icons/rule-of-thirds.png", "icons/center.png"]
         right_photos = []
+        self.right_buttons = []
         
         for i, icon in enumerate(right_icons):
+            text = ""
             try:
                 icon_path = os.path.join(project_dir, icon)
                 icon_img = Image.open(icon_path)
@@ -191,10 +193,15 @@ class MovieDirectorGUI(ctk.CTk):
                 icon_photo = ImageTk.PhotoImage(icon_img)
                 right_photos.append(icon_photo)
                 
+                if i == 1:
+                    text="In"
+                elif i == 2:
+                    text="Out"
+                
                 right_button = ctk.CTkButton(
                     self.right, 
                     image=icon_photo,
-                    text="",
+                    text=text,
                     width=52, 
                     height=52, 
                     corner_radius=14,
@@ -217,6 +224,8 @@ class MovieDirectorGUI(ctk.CTk):
                 
                 right_button.configure(command=lambda btn=right_button, idx=i: self.on_right_action(idx, btn))
                 right_button.grid(row=i, column=0, padx=12, pady=(12 if i == 0 else 10, 0))
+            
+            self.right_buttons.append(right_button)
         
         self.right_photos = right_photos  # Keep references
 
@@ -806,7 +815,7 @@ class MovieDirectorGUI(ctk.CTk):
             else:
                 button.configure(fg_color="blue")
                 
-        self.updatebutton(button, idx)
+        self.updateLeftbutton(button, idx)
             
     def process_result(self, detection_result, w, h):
         get_body = detection_result.pose_landmarks
@@ -894,29 +903,32 @@ class MovieDirectorGUI(ctk.CTk):
             check_leftLine = max(0, min(100, (mid_point_shoulder * 3 / (1 * w)) * 100)) 
             check_rightLine = max(0, min(100, (mid_point_hip * 3 / (1 * w)) * 100)) 
             print("move:left", check_leftLine, check_rightLine)
+            self.sendMessage("move:left")
             # while check_leftLine < 100 and check_rightLine < 100:
             #     print(check_leftLine, check_rightLine)
             #     self.sendMessage(f"move:left")
-            # self.ruleofthirds = False
-            return
                 
         elif sum(1 for x in list if x > (w/5) * 3) > 2:
             # Checks which torso is closer to one of the rule of thirds line (w/3)
             check_leftLine = max(0, min(100, ((w - mid_point_shoulder) / (1 * w / 3)) * 100))
             check_rightLine = max(0, min(100, ((w - mid_point_hip) / (1 * w / 3)) * 100))
             print("move:right",check_leftLine, check_rightLine)
+            self.sendMessage("move:right")
             # while check_leftLine < 100 and check_rightLine < 100:
             #     print(check_leftLine, check_rightLine)
             #     self.sendMessage(f"move:right")
-            # self.ruleofthirds = False
             
         elif sum(1 for x in list if x > (w/5) * 2 and x < (w/5) * 3) >= 2:
             print("subject on middle")
             if abs(mid_point_shoulder - (w/3)) < abs(mid_point_shoulder - (w/3) * 2):
                 print("go left")
+                self.sendMessage("move:left")
                 # while 
             else:
                 print("go right!")
+                self.sendMessage("move:right")
+                
+        self.ruleofthirds = False
         
         
         # !! SYMMETRY
@@ -935,15 +947,37 @@ class MovieDirectorGUI(ctk.CTk):
                 self.sendMessage(f"move:right")
                 print(f"move:right")
 
+    def repeat_action(self, count, move_cmd, zoom_step):
+        def step(i):
+            if i >= count:
+                return
+
+            self.sendMessage(move_cmd)
+
+            self.current_zoomvalue += zoom_step
+            self.zoom_value(self.current_zoomvalue)
+            self.zoom_slider.set(self.current_zoomvalue)
+
+            # schedule next step (e.g., 50ms later)
+            self.after(50, step, i + 1)
+
+        step(0)
         
 
     def on_right_action(self, idx, button):
+        if idx == 1:
+            self.repeat_action(5, "move:up", 0.05)
+
+        elif idx == 2:
+            self.repeat_action(3, "move:down", -0.05)
+                
+        
         if idx == 3: # If rule of thirds is clicked
             self.ruleofthirds = not self.ruleofthirds
-            if self.ruleofthirds:
-                button.configure(fg_color="green")
-            else:
-                button.configure(fg_color="blue")
+            # if self.ruleofthirds:
+            #     button.configure(fg_color="green")
+            # else:
+            #     button.configure(fg_color="blue")
                 
             pass
         if idx == 4: # Center of attention is clicked
@@ -1144,21 +1178,19 @@ class MovieDirectorGUI(ctk.CTk):
         else:
             self.manualMove = False
             
-    def updatebutton(self, button, idx):
-        # --- GROUP 1: index 0,1,2 (independent toggles) ---
-        # if idx in [0, 1, 2]:
-        #     current = button.cget("fg_color")
-        #     new_color = "blue" if current != "blue" else "gray"
-        #     button.configure(fg_color=new_color)
-
-        # --- GROUP 2: index 3,4,5 (only one active) ---
+    def updateLeftbutton(self, button, idx):
         if idx in [3, 4, 5]:
             for i, btn in enumerate(self.left_buttons):
                 if i in [3, 4, 5]:
                     if btn != button:
-                        btn.configure(fg_color="blue")  # active one
-                    # else:
-                    #     btn.configure(fg_color="gray")   # reset others
+                        btn.configure(fg_color="blue")
+                        
+    def updateRightbutton(self, button, idx):
+        if idx in [3, 4]:
+            for i, btn in enumerate(self.right_buttons):
+                if i in [3, 4]:
+                    if btn != button:
+                        btn.configure(fg_color="blue")
         
 def start_client():
     try:
