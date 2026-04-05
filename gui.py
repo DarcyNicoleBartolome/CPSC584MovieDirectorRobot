@@ -61,10 +61,10 @@ WAVE_OUTPUT_FILENAME = "output.wav"
 # !! Change into the Robot's IP when testing with the group5 SD card
 # SERVER_HOST = "172.17.10.222" # Raspy's with CPSC584 wifi
 # SERVER_HOST = "172.17.10.159" # Raspy's with CPSC584 wifi
-SERVER_HOST = "10.0.0.116" # localhost
 SERVER_HOST = "10.0.0.162" # localhost
+SERVER_HOST = "10.0.0.116" # localhost
 SERVER_PORT = 5001
-AUD_PORT = 5001
+AUD_PORT = 5002
 
 
 # !! TODO LOOK AT CHUNKS IN AUDIO AND SUCH!!!!
@@ -88,8 +88,8 @@ class MovieDirectorGUI(ctk.CTk):
 
         # For video streaming
         self.stream_url = "http://172.17.10.222:8080/stream.mjpg"
-        self.stream_url = "http://10.0.0.116:8080/stream.mjpg"
         self.stream_url = "http://10.0.0.162:8080/stream.mjpg"
+        self.stream_url = "http://10.0.0.116:8080/stream.mjpg"
         project_dir = os.path.dirname(os.path.abspath(__file__))
         
         # # For audio streaming
