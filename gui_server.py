@@ -451,69 +451,49 @@ def process_request(data, client_socket, client_address):
       print(f"the request data is empty")
       return
    
-   # parse the message
-   message = request_data.split(':')
-
-   if message[0] == "move":
-      if 'left' == message[1]: # move sideway left
-         move_sideLeft(speed, current_pose)
-      elif 'rotate left' == message[1]: # rotate left
-         move_rotateLeft(speed, current_pose)
-      elif 'rotate right' == message[1]: # rotate right
-         move_rotateRight(speed, current_pose)
-      elif 'right' == message[1]: # move sideway right
-         move_sideRight(speed, current_pose)
-      elif 'look up' == message[1]: # look up
-         lookUp(speed, current_pose)
-      elif 'look down' == message[1]: # look down
-         lookDown(speed, current_pose)
-      elif 'up' == message[1]: # move forward
-         moveUp(speed, current_pose)
-      elif 'down' == message[1]: # move backward
-         moveDown(speed, current_pose)
-      elif 'stand' == message[1]: # stand position
-         crawler.do_step('stand', speed)
-      elif '+' == message[1]: # increase speed
-         speed+=5
-         print(speed)
-      elif '-' == message[1]: # decrease
-         speed-=5
-         print(speed)
-      else: return # Do nothing
+   while "\n" in request_data:
+      message, request_data = request_data.split("\n", 1)
       
-   elif message[0] == "autofocus":
-      print("autofocus On")
-      manual_autofocus(message[1])
-      
-   elif message[0] == "zoom": # Set the function of the camera based on the value
-      print("Zoom On") # Debug print
-      zoom(message[1], message[2])
-      
-   # else: # Assume it's audio
-   #    audio_data = data
-   #    while audio_data != "":
-   #       try:
-   #             audio_data = client_socket.recv(4096)
-   #             stream.write(audio_data)
-   #       except socket.error:
-   #             print("Client Disconnected")
-   #             break
+      if not message:
+         continue
    
-   # elif data.startswith(b"AUD:"):
-   #      audio_data = data[4:]
-   #      stream.write(audio_data)
-      
-#endregion ######### Socket Programming / Start running the server #########
+      # parse the message
+      message = request_data.split(':')
 
-#region ###### Audio Streaming #######
-# def AudioStream(data, client_socket):
-#    while data != "":
-#       try:
-#             data = client_socket.recv(4096)
-#             stream.write(data)
-#       except socket.error:
-#             print("Client Disconnected")
-#             break
+      if message[0] == "move":
+         if 'left' == message[1]: # move sideway left
+            move_sideLeft(speed, current_pose)
+         elif 'rotate left' == message[1]: # rotate left
+            move_rotateLeft(speed, current_pose)
+         elif 'rotate right' == message[1]: # rotate right
+            move_rotateRight(speed, current_pose)
+         elif 'right' == message[1]: # move sideway right
+            move_sideRight(speed, current_pose)
+         elif 'look up' == message[1]: # look up
+            lookUp(speed, current_pose)
+         elif 'look down' == message[1]: # look down
+            lookDown(speed, current_pose)
+         elif 'up' == message[1]: # move forward
+            moveUp(speed, current_pose)
+         elif 'down' == message[1]: # move backward
+            moveDown(speed, current_pose)
+         elif 'stand' == message[1]: # stand position
+            crawler.do_step('stand', speed)
+         elif '+' == message[1]: # increase speed
+            speed+=5
+            print(speed)
+         elif '-' == message[1]: # decrease
+            speed-=5
+            print(speed)
+         else: return # Do nothing
+         
+      elif message[0] == "autofocus":
+         print("autofocus On")
+         manual_autofocus(message[1])
+         
+      elif message[0] == "zoom": # Set the function of the camera based on the value
+         print("Zoom On") # Debug print
+         zoom(message[1], message[2])
    
 
 # If runs, the server starts

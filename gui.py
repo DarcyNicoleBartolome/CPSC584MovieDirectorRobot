@@ -664,6 +664,9 @@ class MovieDirectorGUI(ctk.CTk):
         # self.send_audio_event.set()  # audio enabled
         threading.Thread(target=self.audio_sender, daemon=True).start()
         
+        self.send_zoom_event = threading.Event()
+        threading.Thread(target=self.zoom_value, daemon=True).start()
+        
         
         
         # !! ROBOT SPEED CHANGE POSITION LATER
@@ -1053,7 +1056,7 @@ class MovieDirectorGUI(ctk.CTk):
         
         try:
             # if the client did not send a command, send it to the server as a message the user want to broadcast to all users in the chatroom
-            self.client_socket.sendall(message.encode("utf-8"))
+            self.client_socket.sendall(f"{message}\n".encode("utf-8"))
             
         except Exception as e: # If other Exception error detected, print out the error and close the chatroom window after half a second
             print(f"Error found while sending the message: {e}")
