@@ -119,6 +119,7 @@ class MovieDirectorGUI(ctk.CTk):
 
         self.showZoom = False
         self.showCameraShots = False
+        self.showGoldenRatio = False
         self.current_zoomvalue = 1
 
         left_icons = [
@@ -744,6 +745,9 @@ class MovieDirectorGUI(ctk.CTk):
             cv2.line(annotated_image, (int(w / 5) * 3, 0), (int(w / 5) * 3, h), (0, 255, 0), 3)
             cv2.line(annotated_image, (int(w / 5) * 4, 0), (int(w / 5) * 4, h), (0, 255, 0), 3)
 
+            if self.showGoldenRatio:
+                annotated_image = self._draw_golden_spiral(annotated_image, w, h)
+
             annotated_image_pil = Image.fromarray(annotated_image)
             annotated_imgtk = ImageTk.PhotoImage(annotated_image_pil)
 
@@ -1210,6 +1214,48 @@ class MovieDirectorGUI(ctk.CTk):
 
         # your tracking logic can stay here if you want to re-enable it later
 
+    def _draw_golden_spiral(self, image, w, h):
+        overlay = image.copy()
+        phi = 1.618
+        color = (0, 215, 255)  # gold in BGR->RGB
+        thickness = 2
+
+        # Starting rectangle
+        x, y = 0, 0
+        rw, rh = w, h
+
+        for i in range(10):
+            if i % 4 == 0:
+                sq = int(rh)
+                center = (x + sq, y + sq)
+                cv2.ellipse(overlay, center, (sq, sq), 180, 0, 90, color, thickness, cv2.LINE_AA)
+                x += sq
+                rw -= sq
+            elif i % 4 == 1:
+                sq = int(rw)
+                center = (x, y + sq)
+                cv2.ellipse(overlay, center, (sq, sq), 0, 270, 360, color, thickness, cv2.LINE_AA)
+                y += sq
+                rh -= sq
+            elif i % 4 == 2:
+                sq = int(rh)
+                center = (x - 1, y)
+                cv2.ellipse(overlay, center, (sq, sq), 0, 0, 90, color, thickness, cv2.LINE_AA)
+                rw -= sq
+                x -= sq
+            else:
+                sq = int(rw)
+                center = (x + sq, y)
+                cv2.ellipse(overlay, center, (sq, sq), 0, 90, 180, color, thickness, cv2.LINE_AA)
+                rh -= sq
+                y -= sq
+
+            if rw < 2 or rh < 2:
+                break
+
+        cv2.addWeighted(overlay, 0.6, image, 0.4, 0, image)
+        return image
+
     def toggle_theme(self):
         self.is_dark_mode = not self.is_dark_mode
         mode = "dark" if self.is_dark_mode else "light"
@@ -1218,6 +1264,9 @@ class MovieDirectorGUI(ctk.CTk):
 
     def on_right_action(self, idx):
         print("Right button", idx)
+        if idx == 0:  # Golden ratio
+            self.showGoldenRatio = not self.showGoldenRatio
+            print(f"Golden ratio overlay: {'on' if self.showGoldenRatio else 'off'}")
 
     def zoom_value(self, value):
         time.sleep(0.05)
