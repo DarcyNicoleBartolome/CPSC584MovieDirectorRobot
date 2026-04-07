@@ -220,10 +220,10 @@ class MovieDirectorGUI(ctk.CTk):
                 icon_photo = ImageTk.PhotoImage(icon_img)
                 right_photos.append(icon_photo)
                 
-                if i == 1:
-                    text="In"
-                elif i == 2:
-                    text="Out"
+                # if i == 1:
+                #     text="In"
+                # elif i == 2:
+                #     text="Out"
                 
                 right_button = ctk.CTkButton(
                     self.right, 
@@ -1314,8 +1314,8 @@ class MovieDirectorGUI(ctk.CTk):
         if self.showCameraShots:
             self.showCameraShots = False
             self.camera_shots_frame.place_forget()
-        if self.setAfManual:
-            self.setAfManual = False
+        # if self.setAfManual:
+        #     self.setAfManual = False
             # self.AF_slider.place_forget()
 
     # def on_left_action(self, idx):
@@ -1408,13 +1408,13 @@ class MovieDirectorGUI(ctk.CTk):
         elif self.backwardTrucking:
             pass
         elif self.tracking:
-            self.autoTracking(list, w)
+            self.autoTracking(points, w)
         elif self.backwardTrucking:
-            self.autoBackwardtrucking(list, w)
+            self.autoBackwardtrucking(points, w)
         elif self.rotate_track:
-            self.autoRotate(list, w)
+            self.autoRotate(points, w)
         elif self.ruleofthirds:
-            self.autoRuleofThirds(list, left_sx, right_sx, right_hx, left_hx, w)
+            self.autoRuleofThirds(points, left_sx, right_sx, right_hx, left_hx, w)
         elif self.symmetry:
             self.autoSymmetry(right_sx, left_sx, w)
         
@@ -1590,9 +1590,15 @@ class MovieDirectorGUI(ctk.CTk):
         color = (0, 215, 255)  # gold in BGR->RGB
         thickness = 2
 
+        # !!!!
         # Starting rectangle
-        x, y = 0, 0
-        rw, rh = w, h
+        # x, y = 0, 0
+        # rw, rh = w, h
+        scale = 0.8
+        sw, sh = int(w * scale), int(h * scale)
+        ox, oy = (w - sw) // 2, (h - sh) // 2
+        x, y = ox, oy
+        rw, rh = sw, sh
 
         for i in range(10):
             if i % 4 == 0:
