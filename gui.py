@@ -120,6 +120,7 @@ class MovieDirectorGUI(ctk.CTk):
         self.showZoom = False
         self.showCameraShots = False
         self.showGoldenRatio = False
+        self.showCenterSymmetry = False
         self.current_zoomvalue = 1
 
         left_icons = [
@@ -748,6 +749,9 @@ class MovieDirectorGUI(ctk.CTk):
             if self.showGoldenRatio:
                 annotated_image = self._draw_golden_spiral(annotated_image, w, h)
 
+            if self.showCenterSymmetry:
+                annotated_image = self._draw_center_symmetry(annotated_image, w, h)
+
             annotated_image_pil = Image.fromarray(annotated_image)
             annotated_imgtk = ImageTk.PhotoImage(annotated_image_pil)
 
@@ -1262,11 +1266,34 @@ class MovieDirectorGUI(ctk.CTk):
         ctk.set_appearance_mode(mode)
         print(f"Theme changed to {mode}")
 
+    def _draw_center_symmetry(self, image, w, h):
+        overlay = image.copy()
+        color = (255, 255, 0)  # cyan-ish
+        cx, cy = w // 2, h // 2
+
+        # Vertical and horizontal center lines
+        cv2.line(overlay, (cx, 0), (cx, h), color, 2, cv2.LINE_AA)
+        cv2.line(overlay, (0, cy), (w, cy), color, 2, cv2.LINE_AA)
+
+        # Center crosshair circle
+        cv2.circle(overlay, (cx, cy), 20, color, 2, cv2.LINE_AA)
+        cv2.circle(overlay, (cx, cy), 4, color, -1, cv2.LINE_AA)
+
+        # Diagonal guides
+        cv2.line(overlay, (0, 0), (w, h), color, 1, cv2.LINE_AA)
+        cv2.line(overlay, (w, 0), (0, h), color, 1, cv2.LINE_AA)
+
+        cv2.addWeighted(overlay, 0.5, image, 0.5, 0, image)
+        return image
+
     def on_right_action(self, idx):
         print("Right button", idx)
         if idx == 0:  # Golden ratio
             self.showGoldenRatio = not self.showGoldenRatio
             print(f"Golden ratio overlay: {'on' if self.showGoldenRatio else 'off'}")
+        elif idx == 4:  # Center of symmetry
+            self.showCenterSymmetry = not self.showCenterSymmetry
+            print(f"Center symmetry overlay: {'on' if self.showCenterSymmetry else 'off'}")
 
     def zoom_value(self, value):
         time.sleep(0.05)
