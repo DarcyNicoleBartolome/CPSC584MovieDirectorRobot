@@ -628,29 +628,33 @@ class MovieDirectorGUI(ctk.CTk):
             )
             speaker.pack(side="left", padx=6)
 
+        self.is_dark_mode = True
+
         try:
-            settings_path = os.path.join(project_dir, "icons/settings.png")
-            settings_img = Image.open(settings_path)
-            settings_img = settings_img.resize((40, 40), Image.Resampling.LANCZOS)
-            settings_photo = ImageTk.PhotoImage(settings_img)
-            self.settings_photo = settings_photo
+            bulb_path = os.path.join(project_dir, "icons/bulb.png")
+            bulb_img = Image.open(bulb_path)
+            bulb_img = bulb_img.resize((40, 40), Image.Resampling.LANCZOS)
+            bulb_photo = ImageTk.PhotoImage(bulb_img)
+            self.bulb_photo = bulb_photo
 
             ctk.CTkButton(
                 self.utility,
-                image=settings_photo,
+                image=bulb_photo,
                 text="",
                 width=45,
                 height=45,
                 corner_radius=14,
+                command=self.toggle_theme,
             ).pack(side="left", padx=6)
         except Exception as e:
-            print(f"Error loading settings image: {e}")
+            print(f"Error loading bulb image: {e}")
             ctk.CTkButton(
                 self.utility,
-                text="⚙",
+                text="💡",
                 width=52,
                 height=52,
                 corner_radius=14,
+                command=self.toggle_theme,
             ).pack(side="left", padx=6)
 
         # ---- OpenCV stream state ----
@@ -1122,35 +1126,50 @@ class MovieDirectorGUI(ctk.CTk):
             self.destroy()
 
     # callbacks
+    def _close_all_overlays(self):
+        """Close all center overlays (zoom, camera shots, AF slider)."""
+        if self.showZoom:
+            self.showZoom = False
+            self.zoom_slider.place_forget()
+        if self.showCameraShots:
+            self.showCameraShots = False
+            self.camera_shots_frame.place_forget()
+        if self.setAfManual:
+            self.setAfManual = False
+            self.AF_slider.place_forget()
+
     def on_left_action(self, idx):
         print("Left button", idx)
 
         if idx == 0:  # Camera shot presets
-            self.showCameraShots = not self.showCameraShots
-            if self.showCameraShots:
+            was_open = self.showCameraShots
+            self._close_all_overlays()
+            if not was_open:
+                self.showCameraShots = True
                 self.camera_shots_frame.place(relx=0.5, rely=0.9, anchor='center')
                 print("open camera shots")
             else:
-                self.camera_shots_frame.place_forget()
                 print("close camera shots")
 
         if idx == 2:  # Zoom button
-            self.showZoom = not self.showZoom
-            if self.showZoom:
+            was_open = self.showZoom
+            self._close_all_overlays()
+            if not was_open:
+                self.showZoom = True
                 self.zoom_slider.place(relx=0.5, rely=0.9, relwidth=0.7, relheight=0.06, anchor='center')
                 print("open zoom slider")
             else:
                 print("close zoom slider")
-                self.zoom_slider.place_forget()
 
         if idx == 3:  # Autofocus
-            self.setAfManual = not self.setAfManual
-            if self.setAfManual:
+            was_open = self.setAfManual
+            self._close_all_overlays()
+            if not was_open:
+                self.setAfManual = True
                 print("open autofocus slider")
                 self.AF_slider.place(relx=0.5, rely=0.9, relwidth=0.7, relheight=0.06, anchor='center')
             else:
                 print("close autofocus slider")
-                self.AF_slider.place_forget()
 
     def set_camera_shot(self, shot_type):
         zoom_map = {"wide": 1.0, "mid": 3.0, "closeup": 6.0}
@@ -1190,6 +1209,12 @@ class MovieDirectorGUI(ctk.CTk):
         points.append(left_hx)
 
         # your tracking logic can stay here if you want to re-enable it later
+
+    def toggle_theme(self):
+        self.is_dark_mode = not self.is_dark_mode
+        mode = "dark" if self.is_dark_mode else "light"
+        ctk.set_appearance_mode(mode)
+        print(f"Theme changed to {mode}")
 
     def on_right_action(self, idx):
         print("Right button", idx)
