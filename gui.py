@@ -1050,7 +1050,7 @@ class MovieDirectorGUI(ctk.CTk):
         if value < self.current_zoomvalue:
             state = "-"
         self.current_zoomvalue = value
-        self.sendMessage(f"zoom:{value}:{state}")
+        self.sendMessage(f"zoom:{value}:{state}\n")
         
 
     def on_move(self, direction):
