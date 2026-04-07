@@ -1,15 +1,9 @@
 
 import customtkinter as ctk
-import cv2
 from PIL import Image, ImageTk
 import threading
-import time
 import os
 from datetime import datetime
-
-import mediapipe
-import cv2
-import numpy
 
 # Attempt socket programming
 import socket
@@ -24,9 +18,7 @@ from mediapipe.tasks.python.vision import drawing_styles
 from mediapipe.tasks.python import vision
 
 # STEP 1: Import the necessary modules.
-import mediapipe as mp
 from mediapipe.tasks import python
-from mediapipe.tasks.python import vision
 
 
 def draw_landmarks_on_image(rgb_image, detection_result):
@@ -42,18 +34,10 @@ def draw_landmarks_on_image(rgb_image, detection_result):
             landmark_list=pose_landmarks,
             connections=vision.PoseLandmarksConnections.POSE_LANDMARKS,
             landmark_drawing_spec=pose_landmark_style,
-<<<<<<< HEAD
             connection_drawing_spec=pose_connection_style)
 
 
     return annotated_image
-=======
-            connection_drawing_spec=pose_connection_style
-        )
-
-    return annotated_image
-
->>>>>>> origin/nebilasym
 
 CHUNK = 1024 * 4
 FORMAT = pyaudio.paInt16
@@ -63,21 +47,13 @@ RECORD_SECONDS = 3
 WAVE_OUTPUT_FILENAME = "output.wav"
 
 # !! Change into the Robot's IP when testing with the group5 SD card
-<<<<<<< HEAD
 # SERVER_HOST = "172.17.10.222" # Raspy's with CPSC584 wifi
 # SERVER_HOST = "172.17.10.159" # Raspy's with CPSC584 wifi
 SERVER_HOST = "10.0.0.162" # localhost
 SERVER_HOST = "10.0.0.116" # localhost
-=======
-SERVER_HOST = "172.17.10.222"
->>>>>>> origin/nebilasym
 SERVER_PORT = 5001
 AUD_PORT = 5002
 
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/nebilasym
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
@@ -86,12 +62,8 @@ class MovieDirectorGUI(ctk.CTk):
     def __init__(self, client_socket, aud_socket):
         super().__init__()
         self.client_socket = client_socket
-<<<<<<< HEAD
         self.aud_socket = aud_socket
         
-=======
-
->>>>>>> origin/nebilasym
         self.title("Movie Director Miniature")
         self.geometry("1000x650")
         self.minsize(850, 560)
@@ -101,11 +73,8 @@ class MovieDirectorGUI(ctk.CTk):
 
         # For video streaming
         self.stream_url = "http://172.17.10.222:8080/stream.mjpg"
-<<<<<<< HEAD
         self.stream_url = "http://10.0.0.162:8080/stream.mjpg"
         self.stream_url = "http://10.0.0.116:8080/stream.mjpg"
-=======
->>>>>>> origin/nebilasym
         project_dir = os.path.dirname(os.path.abspath(__file__))
 
         # ---- Recording setup ----
@@ -124,24 +93,11 @@ class MovieDirectorGUI(ctk.CTk):
         # ---- Audio streaming ----
         self.setSpeaker = False
         self.p = pyaudio.PyAudio()
-<<<<<<< HEAD
         self.stream = self.p.open(format=FORMAT,
                         channels=CHANNELS,
                         rate=RATE,
                         input=True,
                         frames_per_buffer=CHUNK)
-=======
-        self.stream = self.p.open(
-            format=FORMAT,
-            channels=CHANNELS,
-            rate=RATE,
-            input=True,
-            frames_per_buffer=CHUNK
-        )
-
-        # For Autofocus
-        self.setAfManual = False
->>>>>>> origin/nebilasym
 
         # Layout
         self.grid_rowconfigure(0, weight=1)
@@ -159,7 +115,6 @@ class MovieDirectorGUI(ctk.CTk):
         self.showGoldenRatio = False
         self.showCenterSymmetry = False
         self.current_zoomvalue = 1
-<<<<<<< HEAD
         
         # auto tracking states
         self.manualMove = True
@@ -174,12 +129,12 @@ class MovieDirectorGUI(ctk.CTk):
         self.showTruckingOptions = False
         
         
+        # !!! 
         # Left side icons: camera, focus, zoom
         left_icons = ["icons/camera.png", "icons/focus2.png", "icons/zoom.png", "icons/tracking.png", "icons/trucking.png", "icons/joystick.png"]
         left_photos = []
         self.left_buttons = []
         
-=======
 
         left_icons = [
             "icons/camera.png",
@@ -192,7 +147,6 @@ class MovieDirectorGUI(ctk.CTk):
         ]
         left_photos = []
 
->>>>>>> origin/nebilasym
         for i, icon in enumerate(left_icons):
             try:
                 icon_path = os.path.join(project_dir, icon)
@@ -200,7 +154,6 @@ class MovieDirectorGUI(ctk.CTk):
                 icon_img = icon_img.resize((40, 40), Image.Resampling.LANCZOS)
                 icon_photo = ImageTk.PhotoImage(icon_img)
                 left_photos.append(icon_photo)
-<<<<<<< HEAD
                 
                 left_button = ctk.CTkButton(
                     self.left, 
@@ -219,27 +172,10 @@ class MovieDirectorGUI(ctk.CTk):
                 
                 left_button = ctk.CTkButton(
                     self.left, 
-=======
-
-                ctk.CTkButton(
-                    self.left,
-                    image=icon_photo,
                     text="",
                     width=52,
                     height=52,
                     corner_radius=14,
-                    command=lambda idx=i: self.on_left_action(idx),
-                ).grid(row=i, column=0, padx=12, pady=(12 if i == 0 else 10, 0))
-            except Exception as e:
-                print(f"Error loading {icon}: {e}")
-                ctk.CTkButton(
-                    self.left,
->>>>>>> origin/nebilasym
-                    text="",
-                    width=52,
-                    height=52,
-                    corner_radius=14,
-<<<<<<< HEAD
                     command=lambda idx=i: self.on_left_action(idx, left_button),
                 )
                 
@@ -249,36 +185,32 @@ class MovieDirectorGUI(ctk.CTk):
             self.left_buttons.append(left_button)
         
         self.left_photos = left_photos  # Keep references
-=======
-                    command=lambda idx=i: self.on_left_action(idx),
-                ).grid(row=i, column=0, padx=12, pady=(12 if i == 0 else 10, 0))
-
-        self.left_photos = left_photos
->>>>>>> origin/nebilasym
 
 
         # Right
         self.right = ctk.CTkFrame(self, corner_radius=16)
         self.right.grid(row=0, column=2, padx=(10, 18), pady=(18, 10), sticky="ns")
-<<<<<<< HEAD
         
         # Right side icons: goldenratio, and others to be added
-        right_icons = ["icons/goldenratio2.png", "icons/dolly.png", "icons/dolly.png", "icons/rule-of-thirds.png", "icons/center.png"]
+        right_icons = [
+            "icons/goldenratio2.png", 
+            "icons/dolly.png", 
+            "icons/dolly.png", 
+            "icons/rule-of-thirds.png", 
+            "icons/center.png"]
         right_photos = []
         self.right_buttons = []
         
-=======
 
-        right_icons = [
-            "icons/goldenratio2.png",
-            "icons/icon2.png",
-            "icons/icon3.png",
-            "icons/rule-of-thirds.png",
-            "icons/center.png"
-        ]
-        right_photos = []
+        # right_icons = [
+        #     "icons/goldenratio2.png",
+        #     "icons/icon2.png",
+        #     "icons/icon3.png",
+        #     "icons/rule-of-thirds.png",
+        #     "icons/center.png"
+        # ]
+        # right_photos = []
 
->>>>>>> origin/nebilasym
         for i, icon in enumerate(right_icons):
             text = ""
             try:
@@ -287,7 +219,6 @@ class MovieDirectorGUI(ctk.CTk):
                 icon_img = icon_img.resize((40, 40), Image.Resampling.LANCZOS)
                 icon_photo = ImageTk.PhotoImage(icon_img)
                 right_photos.append(icon_photo)
-<<<<<<< HEAD
                 
                 if i == 1:
                     text="In"
@@ -300,15 +231,6 @@ class MovieDirectorGUI(ctk.CTk):
                     text=text,
                     width=52, 
                     height=52, 
-=======
-
-                ctk.CTkButton(
-                    self.right,
-                    image=icon_photo,
-                    text="",
-                    width=52,
-                    height=52,
->>>>>>> origin/nebilasym
                     corner_radius=14,
                     command=lambda idx=i: self.on_right_action(idx, right_button),
                 )
@@ -318,18 +240,12 @@ class MovieDirectorGUI(ctk.CTk):
                 
             except Exception as e:
                 print(f"Error loading {icon}: {e}")
-<<<<<<< HEAD
                 right_button = ctk.CTkButton(
                     self.right, 
-=======
-                ctk.CTkButton(
-                    self.right,
->>>>>>> origin/nebilasym
                     text="",
                     width=52,
                     height=52,
                     corner_radius=14,
-<<<<<<< HEAD
                     command=lambda idx=i: self.on_right_action(idx, right_button),
                 )
                 
@@ -339,12 +255,6 @@ class MovieDirectorGUI(ctk.CTk):
             self.right_buttons.append(right_button)
         
         self.right_photos = right_photos  # Keep references
-=======
-                    command=lambda idx=i: self.on_right_action(idx),
-                ).grid(row=i, column=0, padx=12, pady=(12 if i == 0 else 10, 0))
-
-        self.right_photos = right_photos
->>>>>>> origin/nebilasym
 
         # Center preview
         self.center = ctk.CTkFrame(self, corner_radius=18)
@@ -389,7 +299,6 @@ class MovieDirectorGUI(ctk.CTk):
         # Bottom bar
         self.bottom = ctk.CTkFrame(self, corner_radius=16)
         self.bottom.grid(row=1, column=0, columnspan=3, padx=18, pady=(10, 18), sticky="ew")
-<<<<<<< HEAD
         
         # ---- Select tracking options ----
         self.tracking_options = ctk.CTkFrame(self.center, corner_radius=12)
@@ -438,9 +347,6 @@ class MovieDirectorGUI(ctk.CTk):
         self.backward_trucking.pack(side="left", padx=6, pady=6)
         
         
-=======
-
->>>>>>> origin/nebilasym
         self.zoom_slider = ctk.CTkSlider(
             self.center,
             from_=1,
@@ -449,32 +355,14 @@ class MovieDirectorGUI(ctk.CTk):
             command=self.zoom_value
         )
         self.zoom_slider.set(self.current_zoomvalue)
-<<<<<<< HEAD
-        
-        # # Add color filters
-        # self.colorFilterControls = ctk.CTkFrame(self.center, corner_radius=16)
-        
-        # self.colorFilterControls.place(relx=250, rely=20)
-        # text_filters = ["RGGB", "GRBG", "GBRG", "BGGR", "B/W"]
-        # ctk.CTkButton(
-        #             self.colorFilterControls, 
-        #             text="RGGB",
-        #             width=52, 
-        #             height=52, 
-        #             corner_radius=14,
-        #             command=lambda idx=i: self.on_right_action(idx, btn),
-        #         ).place(relx=2, rely=2)
-        # # for i, text in text_filters:
-        
-=======
 
-        self.AF_slider = ctk.CTkSlider(
-            self.center,
-            from_=0,
-            to=10,
-            command=self.AfManual
-        )
-        self.AF_slider.set(0)
+        # self.AF_slider = ctk.CTkSlider(
+        #     self.center,
+        #     from_=0,
+        #     to=10,
+        #     command=self.AfManual
+        # )
+        # self.AF_slider.set(0)
 
         # ---- Camera shot presets ----
         self.camera_shots_frame = ctk.CTkFrame(self.center, corner_radius=12, fg_color="gray20")
@@ -507,18 +395,17 @@ class MovieDirectorGUI(ctk.CTk):
         ).pack(side="left", padx=6, pady=6)
 
         # Add color filters
-        self.colorFilterControls = ctk.CTkFrame(self.center, corner_radius=16)
-        self.colorFilterControls.place(relx=250, rely=20)
+        # self.colorFilterControls = ctk.CTkFrame(self.center, corner_radius=16)
+        # self.colorFilterControls.place(relx=250, rely=20)
 
-        ctk.CTkButton(
-            self.colorFilterControls,
-            text="RGGB",
-            width=52,
-            height=52,
-            corner_radius=14,
-            command=lambda: self.on_right_action(0),
-        ).place(relx=2, rely=2)
->>>>>>> origin/nebilasym
+        # ctk.CTkButton(
+        #     self.colorFilterControls,
+        #     text="RGGB",
+        #     width=52,
+        #     height=52,
+        #     corner_radius=14,
+        #     command=lambda: self.on_right_action(0),
+        # ).place(relx=2, rely=2)
 
         # ---- Navigation (D-pad) ----
         self.dpad = ctk.CTkFrame(self.bottom, corner_radius=16)
@@ -889,14 +776,9 @@ class MovieDirectorGUI(ctk.CTk):
         base_options = python.BaseOptions(model_asset_path='pose_landmarker_lite.task')
         options = vision.PoseLandmarkerOptions(
             base_options=base_options,
-<<<<<<< HEAD
             min_pose_detection_confidence = 0.5,
             min_pose_presence_confidence=0.5,
             output_segmentation_masks=False)
-=======
-            output_segmentation_masks=False
-        )
->>>>>>> origin/nebilasym
         self.pose_detector = vision.PoseLandmarker.create_from_options(options)
 
         self.protocol("WM_DELETE_WINDOW", self.on_close)
@@ -906,7 +788,6 @@ class MovieDirectorGUI(ctk.CTk):
         # --- Director Speaker stream state ---
         self.send_audio_event = threading.Event()
         threading.Thread(target=self.audio_sender, daemon=True).start()
-<<<<<<< HEAD
         
         self.send_zoom_event = threading.Event()
         threading.Thread(target=self.zoom_value, daemon=True).start()
@@ -914,9 +795,6 @@ class MovieDirectorGUI(ctk.CTk):
         
         
         # !! ROBOT SPEED CHANGE POSITION LATER
-=======
-
->>>>>>> origin/nebilasym
         self.speed_label = ctk.CTkLabel(
             self.utility,
             text=str(self.speed),
@@ -964,59 +842,28 @@ class MovieDirectorGUI(ctk.CTk):
 
             self.process_result(detection_result, w, h)
 
-            annotated_image = draw_landmarks_on_image(mp_image.numpy_view(), detection_result)
-<<<<<<< HEAD
-            # annotated_image = np.copy(mp_image.numpy_view())
-            
-            # cv2.circle(annotated_image, (w, h), 75, (255, 0, 0), 10)
-            # cv2.circle(annotated_image, (int(w/2), int(h/2)), 25, (255, 0, 0), 10)
-            
-            cv2.circle(annotated_image, (int(w/3), int(h/3)), 15, (255, 0, 0), 10)
-            cv2.circle(annotated_image, (int(w/3)*2, int(h/3)), 15, (255, 0, 0), 10)
-            
-            cv2.circle(annotated_image, (int(w/3), int(h/3)*2), 15, (255, 0, 0), 10)
-            cv2.circle(annotated_image, (int(w/3)*2, int(h/3)*2), 15, (255, 0, 0), 10)
-            
-            # 5 lines
-            cv2.line(annotated_image, (int(w/5), 0), (int(w/5), h), (0, 255, 0), 3)
-            cv2.line(annotated_image, (int(w/5)*2, 0), (int(w/5)*2, h), (0, 255, 0), 3)
-            cv2.line(annotated_image, (int(w/5)*3, 0), (int(w/5)*3, h), (0, 255, 0), 3)
-            cv2.line(annotated_image, (int(w/5)*4, 0), (int(w/5)*4, h), (0, 255, 0), 3)
-            
-            # # Rule of thirds line
-            # cv2.line(annotated_image, (int(w/3), 0), (int(w/3), h), (0, 255, 0), 3)
-            # cv2.line(annotated_image, (int(w/3)*2, 0), (int(w/3)*2, h), (0, 255, 0), 3)
-            # cv2.line(annotated_image, (0, int(h/3)), (w, int(h/3)), (0, 255, 0), 3)
-            # cv2.line(annotated_image, (0, int(h/3)*2), (w, int(h/3)*2), (0, 255, 0), 3)
-=======
-
-            cv2.line(annotated_image, (int(w / 5), 0), (int(w / 5), h), (0, 255, 0), 3)
-            cv2.line(annotated_image, (int(w / 5) * 2, 0), (int(w / 5) * 2, h), (0, 255, 0), 3)
-            cv2.line(annotated_image, (int(w / 5) * 3, 0), (int(w / 5) * 3, h), (0, 255, 0), 3)
-            cv2.line(annotated_image, (int(w / 5) * 4, 0), (int(w / 5) * 4, h), (0, 255, 0), 3)
+            # annotated_image = draw_landmarks_on_image(mp_image.numpy_view(), detection_result)
+            annotated_image = np.copy(mp_image.numpy_view())
 
             if self.showGoldenRatio:
                 annotated_image = self._draw_golden_spiral(annotated_image, w, h)
 
             if self.showCenterSymmetry:
                 annotated_image = self._draw_center_symmetry(annotated_image, w, h)
->>>>>>> origin/nebilasym
 
             annotated_image_pil = Image.fromarray(annotated_image)
             annotated_imgtk = ImageTk.PhotoImage(annotated_image_pil)
-<<<<<<< HEAD
+            
             
             # Convert to PhotoImage for Tkinter display
-            annotated_image_pil = Image.fromarray(annotated_image)
-            annotated_imgtk = ImageTk.PhotoImage(annotated_image_pil)
+            # annotated_image_pil = Image.fromarray(annotated_image)
+            # annotated_imgtk = ImageTk.PhotoImage(annotated_image_pil)
             
             
-=======
 
             self._latest_imgtk = annotated_imgtk
->>>>>>> origin/nebilasym
             self.video_label.configure(image=annotated_imgtk)
-            self.video_label.image = annotated_imgtk
+            # self.video_label.image = annotated_imgtk # !!!!
 
         self.after(33, self._render_latest_frame)
 
@@ -1065,6 +912,7 @@ class MovieDirectorGUI(ctk.CTk):
 
         self.recording_filename = filepath
 
+        # !!!
         fourcc = cv2.VideoWriter_fourcc(*"XVID")
         self.video_writer = cv2.VideoWriter(
             self.recording_filename,
@@ -1331,7 +1179,7 @@ class MovieDirectorGUI(ctk.CTk):
             frame_rgb = cv2.resize(frame_rgb, (w, h), interpolation=cv2.INTER_AREA)
             img = Image.fromarray(frame_rgb)
             imgtk = ImageTk.PhotoImage(img)
-            video_frame.imgtk = imgtk
+            # video_frame.imgtk = imgtk # !!!
             video_frame.configure(image=imgtk)
 
         def update_video():
@@ -1392,10 +1240,21 @@ class MovieDirectorGUI(ctk.CTk):
                 pass
             self.destroy()
 
+    # !!! Handle two on_left_action functions
+
     # callbacks
-<<<<<<< HEAD
     def on_left_action(self, idx, button):
         print("Left button", idx)
+        
+        if idx == 0:  # Camera shot presets
+            was_open = self.showCameraShots
+            self._close_all_overlays()
+            if not was_open:
+                self.showCameraShots = True
+                self.camera_shots_frame.place(relx=0.5, rely=0.9, anchor='center')
+                print("open camera shots")
+            else:
+                print("close camera shots")
         
         if idx == 2: # Zoom button is clicked
             self.showZoom = not self.showZoom
@@ -1447,7 +1306,6 @@ class MovieDirectorGUI(ctk.CTk):
                 
         self.updateLeftbutton(button, idx)
             
-=======
     def _close_all_overlays(self):
         """Close all center overlays (zoom, camera shots, AF slider)."""
         if self.showZoom:
@@ -1458,40 +1316,40 @@ class MovieDirectorGUI(ctk.CTk):
             self.camera_shots_frame.place_forget()
         if self.setAfManual:
             self.setAfManual = False
-            self.AF_slider.place_forget()
+            # self.AF_slider.place_forget()
 
-    def on_left_action(self, idx):
-        print("Left button", idx)
+    # def on_left_action(self, idx):
+    #     print("Left button", idx)
 
-        if idx == 0:  # Camera shot presets
-            was_open = self.showCameraShots
-            self._close_all_overlays()
-            if not was_open:
-                self.showCameraShots = True
-                self.camera_shots_frame.place(relx=0.5, rely=0.9, anchor='center')
-                print("open camera shots")
-            else:
-                print("close camera shots")
+    #     if idx == 0:  # Camera shot presets
+    #         was_open = self.showCameraShots
+    #         self._close_all_overlays()
+    #         if not was_open:
+    #             self.showCameraShots = True
+    #             self.camera_shots_frame.place(relx=0.5, rely=0.9, anchor='center')
+    #             print("open camera shots")
+    #         else:
+    #             print("close camera shots")
 
-        if idx == 2:  # Zoom button
-            was_open = self.showZoom
-            self._close_all_overlays()
-            if not was_open:
-                self.showZoom = True
-                self.zoom_slider.place(relx=0.5, rely=0.9, relwidth=0.7, relheight=0.06, anchor='center')
-                print("open zoom slider")
-            else:
-                print("close zoom slider")
+    #     if idx == 2:  # Zoom button
+    #         was_open = self.showZoom
+    #         self._close_all_overlays()
+    #         if not was_open:
+    #             self.showZoom = True
+    #             self.zoom_slider.place(relx=0.5, rely=0.9, relwidth=0.7, relheight=0.06, anchor='center')
+    #             print("open zoom slider")
+    #         else:
+    #             print("close zoom slider")
 
-        if idx == 3:  # Autofocus
-            was_open = self.setAfManual
-            self._close_all_overlays()
-            if not was_open:
-                self.setAfManual = True
-                print("open autofocus slider")
-                self.AF_slider.place(relx=0.5, rely=0.9, relwidth=0.7, relheight=0.06, anchor='center')
-            else:
-                print("close autofocus slider")
+        # if idx == 3:  # Autofocus
+        #     was_open = self.setAfManual
+        #     self._close_all_overlays()
+        #     if not was_open:
+        #         self.setAfManual = True
+        #         print("open autofocus slider")
+        #         self.AF_slider.place(relx=0.5, rely=0.9, relwidth=0.7, relheight=0.06, anchor='center')
+        #     else:
+        #         print("close autofocus slider")
 
     def set_camera_shot(self, shot_type):
         zoom_map = {"wide": 1.0, "mid": 3.0, "closeup": 6.0}
@@ -1505,12 +1363,14 @@ class MovieDirectorGUI(ctk.CTk):
         self.after(2000, lambda: self.set_status(""))
         print(f"Camera shot: {shot_type} -> zoom {zoom_val}")
 
-    def AfManual(self, value):
-        time.sleep(0.05)
-        print("Lens position: ", value)
-        self.sendMessage(f"autofocus:{value}")
+    # def AfManual(self, value):
+    #     time.sleep(0.05)
+    #     print("Lens position: ", value)
+    #     self.sendMessage(f"autofocus:{value}")
 
->>>>>>> origin/nebilasym
+
+    # !!!!
+
     def process_result(self, detection_result, w, h):
         get_body = detection_result.pose_landmarks
         points = []
@@ -1520,20 +1380,19 @@ class MovieDirectorGUI(ctk.CTk):
 
         result = get_body[0]
         right_sx = float(result[12].x * w)
-<<<<<<< HEAD
-        list.append(right_sx)
+        points.append(right_sx)
         right_sy = float(result[12].y * h)
         
         left_sx = float(result[11].x * w)
-        list.append(left_sx)
+        points.append(left_sx)
         left_sy = float(result[11].y * h)
         
         right_hx = float(result[24].x * w)
-        list.append(right_hx)
+        points.append(right_hx)
         right_hy = float(result[24].y * h)
         
         left_hx = float(result[23].x * w)
-        list.append(left_hx)
+        points.append(left_hx)
         left_hy = float(result[23].y * h)
         
         if not hasattr(self, "last_auto_time"):
@@ -1712,17 +1571,16 @@ class MovieDirectorGUI(ctk.CTk):
 
         step(0)
         
-=======
-        points.append(right_sx)
+        # points.append(right_sx)
 
-        left_sx = float(result[11].x * w)
-        points.append(left_sx)
+        # left_sx = float(result[11].x * w)
+        # points.append(left_sx)
 
-        right_hx = float(result[24].x * w)
-        points.append(right_hx)
+        # right_hx = float(result[24].x * w)
+        # points.append(right_hx)
 
-        left_hx = float(result[23].x * w)
-        points.append(left_hx)
+        # left_hx = float(result[23].x * w)
+        # points.append(left_hx)
 
         # your tracking logic can stay here if you want to re-enable it later
 
@@ -1798,7 +1656,6 @@ class MovieDirectorGUI(ctk.CTk):
         """Close all composition overlays (golden ratio, center symmetry)."""
         self.showGoldenRatio = False
         self.showCenterSymmetry = False
->>>>>>> origin/nebilasym
 
     def on_right_action(self, idx, button):
         if idx == 1:
@@ -1847,12 +1704,8 @@ class MovieDirectorGUI(ctk.CTk):
         if value < self.current_zoomvalue:
             state = "-"
         self.current_zoomvalue = value
-<<<<<<< HEAD
         self.sendMessage(f"zoom:{value}:{state}\n")
         
-=======
-        self.sendMessage(f"zoom:{value}:{state}")
->>>>>>> origin/nebilasym
 
     def on_move(self, direction):
         print("Move:", direction)
@@ -1867,14 +1720,9 @@ class MovieDirectorGUI(ctk.CTk):
 
     def directorSpeaker(self):
         self.setSpeaker = not self.setSpeaker
-<<<<<<< HEAD
         print(f"set speaker: {self.setSpeaker}") 
         print(f"speaker is set: {self.send_audio_event.is_set()}") 
         
-=======
-        print(f"set speaker: {self.setSpeaker}")
-
->>>>>>> origin/nebilasym
         if self.send_audio_event.is_set():
             self.send_audio_event.clear()
         else:
@@ -1884,7 +1732,6 @@ class MovieDirectorGUI(ctk.CTk):
         print("Audio thread started")
 
         while True:
-<<<<<<< HEAD
             data = self.stream.read(CHUNK, exception_on_overflow=False) # Attempt removing 4 bytes for AUD:
             # data = self.stream.read(CHUNK, exception_on_overflow=False) # Attempt removing 4 bytes for AUD:
 
@@ -1897,21 +1744,6 @@ class MovieDirectorGUI(ctk.CTk):
                     break
         
     # Handles when user sends message of their input
-=======
-            try:
-                data = self.stream.read(CHUNK - 4, exception_on_overflow=False)
-
-                if self.send_audio_event.is_set():
-                    try:
-                        self.client_socket.sendall(data)
-                    except Exception as e:
-                        print("Audio send error:", e)
-                        break
-            except Exception as e:
-                print("Audio read error:", e)
-                break
-
->>>>>>> origin/nebilasym
     def sendMessage(self, message):
         if not message:
             return
@@ -1920,7 +1752,6 @@ class MovieDirectorGUI(ctk.CTk):
             self.client_socket.sendall(message.encode("utf-8"))
         except Exception as e:
             print(f"Error found while sending the message: {e}")
-<<<<<<< HEAD
             
     def set_trucking(self, option):
         if option == "Forward":
@@ -2091,25 +1922,6 @@ def start_client():
             aud_sock.close()
         except:
             pass
-=======
-
-
-def start_client():
-    """Start the client and connect to the server."""
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
-            client_socket.connect((SERVER_HOST, SERVER_PORT))
-            app = MovieDirectorGUI(client_socket)
-            app.mainloop()
-
-    except ConnectionRefusedError:
-        print(f"Connection to {SERVER_HOST}:{SERVER_PORT} failed. Ensure the server is running.")
-
-    except Exception as e:
-        print(f"An error occurred while running the application: {e}")
-        print("You are forced to leave the chatroom... Please retry and come back again")
-
->>>>>>> origin/nebilasym
 
 if __name__ == "__main__":
     start_client()
