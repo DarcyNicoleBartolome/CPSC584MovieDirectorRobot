@@ -1286,14 +1286,27 @@ class MovieDirectorGUI(ctk.CTk):
         cv2.addWeighted(overlay, 0.5, image, 0.5, 0, image)
         return image
 
+    def _close_all_composition_overlays(self):
+        """Close all composition overlays (golden ratio, center symmetry)."""
+        self.showGoldenRatio = False
+        self.showCenterSymmetry = False
+
     def on_right_action(self, idx):
         print("Right button", idx)
         if idx == 0:  # Golden ratio
-            self.showGoldenRatio = not self.showGoldenRatio
+            was_on = self.showGoldenRatio
+            self._close_all_composition_overlays()
+            if not was_on:
+                self.showGoldenRatio = True
             print(f"Golden ratio overlay: {'on' if self.showGoldenRatio else 'off'}")
         elif idx == 4:  # Center of symmetry
-            self.showCenterSymmetry = not self.showCenterSymmetry
+            was_on = self.showCenterSymmetry
+            self._close_all_composition_overlays()
+            if not was_on:
+                self.showCenterSymmetry = True
             print(f"Center symmetry overlay: {'on' if self.showCenterSymmetry else 'off'}")
+        else:
+            self._close_all_composition_overlays()
 
     def zoom_value(self, value):
         time.sleep(0.05)
