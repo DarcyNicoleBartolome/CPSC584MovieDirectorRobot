@@ -23,7 +23,7 @@ import io
 import subprocess
 
 # HOST = "172.17.10.222" # Raspy's with CPSC584 wifi
-HOST = "10.0.0.6" # Raspy's with CPSC584 wifi
+HOST = "localhost" # Raspy's with CPSC584 wifi
 PORT = 5001
 AUD_PORT = 5002
 

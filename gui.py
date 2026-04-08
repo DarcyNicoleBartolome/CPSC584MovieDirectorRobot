@@ -51,7 +51,7 @@ WAVE_OUTPUT_FILENAME = "output.wav"
 # SERVER_HOST = "172.17.10.159" # Raspy's with CPSC584 wifi
 # SERVER_HOST = "10.0.0.162" # localhost
 # SERVER_HOST = "10.0.0.116" # localhost
-SERVER_HOST = "10.0.0.6" # localhost
+SERVER_HOST = "localhost" # localhost
 SERVER_PORT = 5001
 AUD_PORT = 5002
 
@@ -73,11 +73,22 @@ class MovieDirectorGUI(ctk.CTk):
         self.speed = 90
 
         # For video streaming
-        self.stream_url = "http://172.17.10.222:8080/stream.mjpg"
-        self.stream_url = "http://10.0.0.162:8080/stream.mjpg"
-        self.stream_url = "http://10.0.0.116:8080/stream.mjpg"
-        self.stream_url = "http://10.0.0.6:8080/stream.mjpg"
+        # self.stream_url = "http://172.17.10.222:8080/stream.mjpg"
+        # self.stream_url = "http://10.0.0.162:8080/stream.mjpg"
+        # self.stream_url = "http://10.0.0.116:8080/stream.mjpg"
+        # self.stream_url = "http://10.0.0.6:8080/stream.mjpg"
+        self.stream_url = "http://localhost:8080/stream.mjpg"
         project_dir = os.path.dirname(os.path.abspath(__file__))
+
+        self.golden_overlay = None
+        golden_path = os.path.join(project_dir, "icons", "goldenspiral.png")
+
+        if os.path.exists(golden_path):
+            self.golden_overlay = cv2.imread(golden_path, cv2.IMREAD_UNCHANGED)
+            if self.golden_overlay is None:
+                print("Could not load golden spiral overlay")
+        else:
+            print("golden_spiral.png not found:", golden_path)
 
         # ---- Recording setup ----
         self.recordings_dir = os.path.join(project_dir, "recordings")
@@ -1589,52 +1600,29 @@ class MovieDirectorGUI(ctk.CTk):
 
         # your tracking logic can stay here if you want to re-enable it later
 
+
     def _draw_golden_spiral(self, image, w, h):
-        overlay = image.copy()
-        phi = 1.618
-        color = (0, 215, 255)  # gold in BGR->RGB
-        thickness = 2
+        if self.golden_overlay is None:
+            return image
 
-        # !!!!
-        # Starting rectangle
-        # x, y = 0, 0
-        # rw, rh = w, h
-        scale = 1
-        sw, sh = int(w * scale), int(h * scale)
-        ox, oy = (w - sw) // 2, (h - sh) // 2
-        x, y = ox, oy
-        rw, rh = sw, sh
+        overlay = cv2.resize(self.golden_overlay, (w, h), interpolation=cv2.INTER_AREA)
+        overlay = cv2.cvtColor(overlay, cv2.COLOR_BGRA2RGBA)
 
-        for i in range(10):
-            if i % 4 == 0:
-                sq = int(rh)
-                center = (x + sq, y + sq)
-                cv2.ellipse(overlay, center, (sq, sq), 180, 0, 90, color, thickness, cv2.LINE_AA)
-                x += sq
-                rw -= sq
-            elif i % 4 == 1:
-                sq = int(rw)
-                center = (x, y + sq)
-                cv2.ellipse(overlay, center, (sq, sq), 0, 270, 360, color, thickness, cv2.LINE_AA)
-                y += sq
-                rh -= sq
-            elif i % 4 == 2:
-                sq = int(rh)
-                center = (x - 1, y)
-                cv2.ellipse(overlay, center, (sq, sq), 0, 0, 90, color, thickness, cv2.LINE_AA)
-                rw -= sq
-                x -= sq
-            else:
-                sq = int(rw)
-                center = (x + sq, y)
-                cv2.ellipse(overlay, center, (sq, sq), 0, 90, 180, color, thickness, cv2.LINE_AA)
-                rh -= sq
-                y -= sq
+        # if png has alpha channel
+        if overlay.shape[2] == 4:
+            overlay_rgb = overlay[:, :, :3]
+            alpha = overlay[:, :, 3] / 255.0 * 0.5
 
-            if rw < 2 or rh < 2:
-                break
+            for c in range(3):
+                image[:, :, c] = (
+                    alpha * overlay_rgb[:, :, c] +
+                    (1 - alpha) * image[:, :, c]
+                ).astype(np.uint8)
 
-        cv2.addWeighted(overlay, 0.6, image, 0.4, 0, image)
+        else:
+            # fallback if no alpha channel
+            image = cv2.addWeighted(image, 0.8, overlay, 0.2, 0)
+
         return image
 
     def toggle_theme(self):
