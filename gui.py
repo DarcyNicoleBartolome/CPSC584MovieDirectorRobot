@@ -16,11 +16,9 @@ import mediapipe as mp
 from mediapipe.tasks.python.vision import drawing_utils
 from mediapipe.tasks.python.vision import drawing_styles
 from mediapipe.tasks.python import vision
-
-# STEP 1: Import the necessary modules.
 from mediapipe.tasks import python
 
-
+# Draw the body landmarks for debugging
 def draw_landmarks_on_image(rgb_image, detection_result):
     pose_landmarks_list = detection_result.pose_landmarks
     annotated_image = np.copy(rgb_image)
@@ -35,10 +33,10 @@ def draw_landmarks_on_image(rgb_image, detection_result):
             connections=vision.PoseLandmarksConnections.POSE_LANDMARKS,
             landmark_drawing_spec=pose_landmark_style,
             connection_drawing_spec=pose_connection_style)
-
-
+        
     return annotated_image
 
+# Constant for audio processing
 CHUNK = 1024 * 4
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
@@ -49,9 +47,7 @@ WAVE_OUTPUT_FILENAME = "output.wav"
 # !! Change into the Robot's IP when testing with the group5 SD card
 # SERVER_HOST = "172.17.10.222" # Raspy's with CPSC584 wifi
 # SERVER_HOST = "172.17.10.159" # Raspy's with CPSC584 wifi
-# SERVER_HOST = "10.0.0.162" # localhost
-# SERVER_HOST = "10.0.0.116" # localhost
-SERVER_HOST = "10.0.0.6" # localhost
+SERVER_HOST = "localhost" # localhost
 SERVER_PORT = 5001
 AUD_PORT = 5002
 
@@ -73,10 +69,8 @@ class MovieDirectorGUI(ctk.CTk):
         self.speed = 90
 
         # For video streaming
-        self.stream_url = "http://172.17.10.222:8080/stream.mjpg"
-        self.stream_url = "http://10.0.0.162:8080/stream.mjpg"
-        self.stream_url = "http://10.0.0.116:8080/stream.mjpg"
-        self.stream_url = "http://10.0.0.6:8080/stream.mjpg"
+        # self.stream_url = "http://172.17.10.222:8080/stream.mjpg"
+        self.stream_url = "http://localhost:8080/stream.mjpg"
         project_dir = os.path.dirname(os.path.abspath(__file__))
 
         # ---- Recording setup ----
@@ -112,10 +106,12 @@ class MovieDirectorGUI(ctk.CTk):
         self.left = ctk.CTkFrame(self, corner_radius=16)
         self.left.grid(row=0, column=0, padx=(18, 10), pady=(18, 10), sticky="ns")
 
+        # States for each buttons
         self.showZoom = False
         self.showCameraShots = False
         self.showGoldenRatio = False
         self.showCenterSymmetry = False
+        self.showRuleofThirds = False
         self.current_zoomvalue = 1
         
         # auto tracking states
@@ -131,10 +127,13 @@ class MovieDirectorGUI(ctk.CTk):
         self.showTruckingOptions = False
         
         
-        # !!! 
         # Left side icons: camera, focus, zoom
-        left_icons = ["icons/camera.png", "icons/focus2.png", "icons/zoom.png", "icons/tracking.png", "icons/trucking.png", "icons/joystick.png"]
-        # left_photos = []
+        left_icons = ["icons/camera.png", 
+                      "icons/zoom.png", 
+                      "icons/tracking.png", 
+                      "icons/trucking.png"]
+        
+        left_photos = []
         self.left_buttons = []
         
 
@@ -147,8 +146,8 @@ class MovieDirectorGUI(ctk.CTk):
         #     "icons/joystick.png",
         #     "icons/lock.png"
         # ]
-        left_photos = []
 
+        """Set up the left buttons"""
         for i, icon in enumerate(left_icons):
             try:
                 icon_path = os.path.join(project_dir, icon)
@@ -193,7 +192,7 @@ class MovieDirectorGUI(ctk.CTk):
         self.right = ctk.CTkFrame(self, corner_radius=16)
         self.right.grid(row=0, column=2, padx=(10, 18), pady=(18, 10), sticky="ns")
         
-        # Right side icons: goldenratio, and others to be added
+        # Right side icons
         right_icons = [
             "icons/goldenratio2.png", 
             "icons/dolly.png", 
@@ -202,17 +201,8 @@ class MovieDirectorGUI(ctk.CTk):
             "icons/center.png"]
         right_photos = []
         self.right_buttons = []
-        
 
-        # right_icons = [
-        #     "icons/goldenratio2.png",
-        #     "icons/icon2.png",
-        #     "icons/icon3.png",
-        #     "icons/rule-of-thirds.png",
-        #     "icons/center.png"
-        # ]
-        # right_photos = []
-
+        # Set up right buttons
         for i, icon in enumerate(right_icons):
             text = ""
             try:
@@ -222,10 +212,10 @@ class MovieDirectorGUI(ctk.CTk):
                 icon_photo = ImageTk.PhotoImage(icon_img)
                 right_photos.append(icon_photo)
                 
-                # if i == 1:
-                #     text="In"
-                # elif i == 2:
-                #     text="Out"
+                if i == 1:
+                    text="In"
+                elif i == 2:
+                    text="Out"
                 
                 right_button = ctk.CTkButton(
                     self.right, 
@@ -234,6 +224,7 @@ class MovieDirectorGUI(ctk.CTk):
                     width=52, 
                     height=52, 
                     corner_radius=14,
+                    compound = "top",
                     command=lambda idx=i: self.on_right_action(idx, right_button),
                 )
                 
@@ -349,6 +340,7 @@ class MovieDirectorGUI(ctk.CTk):
         self.backward_trucking.pack(side="left", padx=6, pady=6)
         
         
+        # Set up the zoom slider place in the bottom of the preview screen
         self.zoom_slider = ctk.CTkSlider(
             self.center,
             from_=1,
@@ -357,14 +349,6 @@ class MovieDirectorGUI(ctk.CTk):
             command=self.zoom_value
         )
         self.zoom_slider.set(self.current_zoomvalue)
-
-        # self.AF_slider = ctk.CTkSlider(
-        #     self.center,
-        #     from_=0,
-        #     to=10,
-        #     command=self.AfManual
-        # )
-        # self.AF_slider.set(0)
 
         # ---- Camera shot presets ----
         self.camera_shots_frame = ctk.CTkFrame(self.center, corner_radius=12, fg_color="gray20")
@@ -853,20 +837,19 @@ class MovieDirectorGUI(ctk.CTk):
 
             if self.showCenterSymmetry:
                 annotated_image = self._draw_center_symmetry(annotated_image, w, h)
+                
+            if self.showRuleofThirds:
+                annotated_image = self._draw_rule_of_thirds(annotated_image, w, h)
 
+            # Convert to PhotoImage for Tkinter display
             annotated_image_pil = Image.fromarray(annotated_image)
             annotated_imgtk = ImageTk.PhotoImage(annotated_image_pil)
-            
-            
-            # Convert to PhotoImage for Tkinter display
-            # annotated_image_pil = Image.fromarray(annotated_image)
-            # annotated_imgtk = ImageTk.PhotoImage(annotated_image_pil)
             
             
 
             self._latest_imgtk = annotated_imgtk
             self.video_label.configure(image=annotated_imgtk)
-            # self.video_label.image = annotated_imgtk # !!!!
+            # self.video_label.image = annotated_imgtk 
 
         self.after(33, self._render_latest_frame)
 
@@ -915,7 +898,6 @@ class MovieDirectorGUI(ctk.CTk):
 
         self.recording_filename = filepath
 
-        # !!!
         fourcc = cv2.VideoWriter_fourcc(*"XVID")
         self.video_writer = cv2.VideoWriter(
             self.recording_filename,
@@ -1244,7 +1226,6 @@ class MovieDirectorGUI(ctk.CTk):
                 pass
             self.destroy()
 
-    # !!! Handle two on_left_action functions
 
     # callbacks
     def on_left_action(self, idx, button):
@@ -1260,7 +1241,7 @@ class MovieDirectorGUI(ctk.CTk):
             else:
                 print("close camera shots")
         
-        if idx == 2:  # Zoom button
+        if idx == 1:  # Zoom button
             was_open = self.showZoom
             self._close_all_overlays()
             if not was_open:
@@ -1269,8 +1250,9 @@ class MovieDirectorGUI(ctk.CTk):
                 print("open zoom slider")
             else:
                 print("close zoom slider")
-                
-        elif idx == 3:
+         
+        # Click button to show tracking options       
+        elif idx == 2:
             self.showTrackingOptions = not self.showTrackingOptions
             self.toggleTrackingOptions()
             if self.showTrackingOptions:
@@ -1283,7 +1265,8 @@ class MovieDirectorGUI(ctk.CTk):
                 button.configure(fg_color=("#3B8ED0", "#1F6AA5"))
                 self.tracking_options.place_forget()
             
-        elif idx == 4:
+        # Click button to show trucking options 
+        elif idx == 3: 
             self.showTruckingOptions = not self.showTruckingOptions
             self.toggleTruckingOptions()
             if self.showTruckingOptions:
@@ -1297,17 +1280,6 @@ class MovieDirectorGUI(ctk.CTk):
                 button.configure(fg_color=("#3B8ED0", "#1F6AA5"))
                 self.trucking_options.place_forget()
 
-        
-        elif idx == 5:  
-            self.toggleManual()
-            if self.manualMove:
-                button.configure(fg_color="green")
-                self.zoom_slider.place_forget()
-                self.tracking_options.place_forget()
-                self.trucking_options.place_forget()
-                self.showZoom = False
-            else:
-                button.configure(fg_color=("#3B8ED0", "#1F6AA5"))
                 
         self.updateLeftbutton(button, idx)
             
@@ -1319,42 +1291,6 @@ class MovieDirectorGUI(ctk.CTk):
         if self.showCameraShots:
             self.showCameraShots = False
             self.camera_shots_frame.place_forget()
-        # if self.setAfManual:
-        #     self.setAfManual = False
-            # self.AF_slider.place_forget()
-
-    # def on_left_action(self, idx):
-    #     print("Left button", idx)
-
-    #     if idx == 0:  # Camera shot presets
-    #         was_open = self.showCameraShots
-    #         self._close_all_overlays()
-    #         if not was_open:
-    #             self.showCameraShots = True
-    #             self.camera_shots_frame.place(relx=0.5, rely=0.9, anchor='center')
-    #             print("open camera shots")
-    #         else:
-    #             print("close camera shots")
-
-    #     if idx == 2:  # Zoom button
-    #         was_open = self.showZoom
-    #         self._close_all_overlays()
-    #         if not was_open:
-    #             self.showZoom = True
-    #             self.zoom_slider.place(relx=0.5, rely=0.9, relwidth=0.7, relheight=0.06, anchor='center')
-    #             print("open zoom slider")
-    #         else:
-    #             print("close zoom slider")
-
-        # if idx == 3:  # Autofocus
-        #     was_open = self.setAfManual
-        #     self._close_all_overlays()
-        #     if not was_open:
-        #         self.setAfManual = True
-        #         print("open autofocus slider")
-        #         self.AF_slider.place(relx=0.5, rely=0.9, relwidth=0.7, relheight=0.06, anchor='center')
-        #     else:
-        #         print("close autofocus slider")
 
     def set_camera_shot(self, shot_type):
         zoom_map = {"wide": 1.0, "mid": 3.0, "closeup": 6.0}
@@ -1368,14 +1304,9 @@ class MovieDirectorGUI(ctk.CTk):
         self.after(2000, lambda: self.set_status(""))
         print(f"Camera shot: {shot_type} -> zoom {zoom_val}")
 
-    # def AfManual(self, value):
-    #     time.sleep(0.05)
-    #     print("Lens position: ", value)
-    #     self.sendMessage(f"autofocus:{value}")
 
 
-    # !!!!
-
+    # Process the detection results to create robot tracking if any one of them is on
     def process_result(self, detection_result, w, h):
         get_body = detection_result.pose_landmarks
         points = []
@@ -1383,6 +1314,7 @@ class MovieDirectorGUI(ctk.CTk):
         if len(get_body) == 0:
             return
 
+        # Calculate shoulder and hip points to screen coordinates
         result = get_body[0]
         right_sx = float(result[12].x * w)
         points.append(right_sx)
@@ -1408,10 +1340,10 @@ class MovieDirectorGUI(ctk.CTk):
         if now - self.last_auto_time < 1.5:
             return
         
+        # Determine the tracking based on the points only if any of the states are true
+        
         if self.forwardTrucking:
             self.autoTrucking(left_sx, right_sx)
-        elif self.backwardTrucking:
-            pass
         elif self.tracking:
             self.autoTracking(points, w)
         elif self.backwardTrucking:
@@ -1424,7 +1356,7 @@ class MovieDirectorGUI(ctk.CTk):
             self.autoSymmetry(right_sx, left_sx, w)
         
     
-
+    # Robot moves sideways based on if subject is either at on one of the edges of the screen
     def autoTracking(self, list, w):
         if not hasattr(self, "last_auto_time"):
             self.last_auto_time = 0
@@ -1442,7 +1374,7 @@ class MovieDirectorGUI(ctk.CTk):
             self.sendMessage(f"move:right")
                 
     
-
+    # Robot auto moves forward
     def autoTrucking(self, left_sx, right_sx):
         if not hasattr(self, "last_auto_time"):
             self.last_auto_time = 0
@@ -1454,7 +1386,8 @@ class MovieDirectorGUI(ctk.CTk):
         # Move forward if shoulders are too far
         if (abs(left_sx-right_sx) < 100):
             self.sendMessage(f"move:up")
-        
+    
+    # Robot auto moves backwards
     def autoBackwardtrucking(self, left_sx, right_sx):
         if not hasattr(self, "last_auto_time"):
             self.last_auto_time = 0
@@ -1468,6 +1401,7 @@ class MovieDirectorGUI(ctk.CTk):
         if (abs(left_sx-right_sx) > 120):
             self.sendMessage(f"move:down")
         
+    # Auto Rotate robot if subject is at the end of one of the side of the screen
     def autoRotate(self, list, w):
         if not hasattr(self, "last_auto_time"):
             self.last_auto_time = 0
@@ -1486,6 +1420,7 @@ class MovieDirectorGUI(ctk.CTk):
             self.sendMessage(f"move:rotate right")
             time.sleep(1)
         
+    # 
     def autoRuleofThirds(self, list, left_sx, right_sx, right_hx, left_hx, w):
         if not hasattr(self, "last_auto_time"):
             self.last_auto_time = 0
@@ -1494,7 +1429,6 @@ class MovieDirectorGUI(ctk.CTk):
         now = time.time()
         if now - self.last_auto_time < 1.5:
             return
-        # !! While loop until it is satisfied when subject is in one of the closest rule of thirds points
         mid_point_shoulder = abs((1-(1/2))*left_sx + (1/2)*right_sx)
         mid_point_hip = abs((1-(1/2))*left_hx + (1/2)*right_hx)
         
@@ -1532,7 +1466,7 @@ class MovieDirectorGUI(ctk.CTk):
         self.ruleofthirds = False
         
         
-        # !! SYMMETRY
+    # Calculate the center of attention based on teh subject
     def autoSymmetry(self, right_sx, left_sx, w):
         if not hasattr(self, "last_auto_time"):
             self.last_auto_time = 0
@@ -1576,18 +1510,6 @@ class MovieDirectorGUI(ctk.CTk):
 
         step(0)
         
-        # points.append(right_sx)
-
-        # left_sx = float(result[11].x * w)
-        # points.append(left_sx)
-
-        # right_hx = float(result[24].x * w)
-        # points.append(right_hx)
-
-        # left_hx = float(result[23].x * w)
-        # points.append(left_hx)
-
-        # your tracking logic can stay here if you want to re-enable it later
 
     def _draw_golden_spiral(self, image, w, h):
         overlay = image.copy()
@@ -1637,11 +1559,33 @@ class MovieDirectorGUI(ctk.CTk):
         cv2.addWeighted(overlay, 0.6, image, 0.4, 0, image)
         return image
 
+    
     def toggle_theme(self):
+        """Toggle the dark / white theme of the gui"""
         self.is_dark_mode = not self.is_dark_mode
         mode = "dark" if self.is_dark_mode else "light"
         ctk.set_appearance_mode(mode)
         print(f"Theme changed to {mode}")
+        
+    def _draw_rule_of_thirds(self, image, w, h):
+        # print("drawing rule of thirds")
+        overlay = image.copy()
+        
+        # Rule of thirds intersection points
+        cv2.circle(overlay, (int(w/3), int(h/3)), 15, (255, 0, 0), 10)
+        cv2.circle(overlay, (int(w/3)*2, int(h/3)), 15, (255, 0, 0), 10)
+        
+        cv2.circle(overlay, (int(w/3), int(h/3)*2), 15, (255, 0, 0), 10)
+        cv2.circle(overlay, (int(w/3)*2, int(h/3)*2), 15, (255, 0, 0), 10)
+        
+        # # Rule of thirds line
+        cv2.line(overlay, (int(w/3), 0), (int(w/3), h), (0, 0, 255), 3)
+        cv2.line(overlay, (int(w/3)*2, 0), (int(w/3)*2, h), (0, 0, 255), 3)
+        cv2.line(overlay, (0, int(h/3)), (w, int(h/3)), (0, 0, 255), 3)
+        cv2.line(overlay, (0, int(h/3)*2), (w, int(h/3)*2), (0, 0, 255), 3)
+        
+        cv2.addWeighted(overlay, 0.5, image, 0.5, 0, image)
+        return image
 
     def _draw_center_symmetry(self, image, w, h):
         overlay = image.copy()
@@ -1667,23 +1611,27 @@ class MovieDirectorGUI(ctk.CTk):
         """Close all composition overlays (golden ratio, center symmetry)."""
         self.showGoldenRatio = False
         self.showCenterSymmetry = False
+        self.showRuleofThirds = False
+
 
     def on_right_action(self, idx, button):
+        # Pressing the Dolly In button
         if idx == 1:
             self.repeat_action(5, "move:up", -0.1)
-
+        # Pressing the Dolly Out button
         elif idx == 2:
             self.repeat_action(5, "move:down", 0.1)
                 
-        
+        # Adjust position by rule of thirds
         if idx == 3: # If rule of thirds is clicked
             self.ruleofthirds = not self.ruleofthirds
-            # if self.ruleofthirds:
-            #     button.configure(fg_color="green")
-            # else:
-            #     button.configure(fg_color="blue")
+            was_on = self.showRuleofThirds
+            self._close_all_composition_overlays()
+            if not was_on:
+                self.showRuleofThirds = True
+            print(f"Rule of thirds overlay: {'on' if self.showRuleofThirds else 'off'}")
                 
-            pass
+        # Adjust position by Center of attention
         if idx == 4: # Center of attention is clicked
             self.symmetry = not self.symmetry
             if self.symmetry:
@@ -1708,9 +1656,11 @@ class MovieDirectorGUI(ctk.CTk):
         else:
             self._close_all_composition_overlays()
 
+    # Send the zoom value to the server to set the camera's zoom
     def zoom_value(self, value):
-        time.sleep(0.05)
+        time.sleep(0.05) # Add time sleep for proper processing
         print("Zoom: ", value)
+        # decrease if zoom in or out based on camparing the current zoom value with the given value
         state = "+"
         if value < self.current_zoomvalue:
             state = "-"
@@ -1718,10 +1668,12 @@ class MovieDirectorGUI(ctk.CTk):
         self.sendMessage(f"zoom:{value}:{state}\n")
         
 
+    # Send the move command to the server to move the robot to a certain direction or change speed by 5
     def on_move(self, direction):
         print("Move:", direction)
         self.sendMessage(f"move:{direction}")
 
+        # + increase speed by 5, - decrease speed by 5
         if direction == "+":
             self.speed += 5
             self.speed_label.configure(text=str(self.speed))
@@ -1729,26 +1681,25 @@ class MovieDirectorGUI(ctk.CTk):
             self.speed -= 5
             self.speed_label.configure(text=str(self.speed))
 
+    # toggle the speaker
     def directorSpeaker(self):
         self.setSpeaker = not self.setSpeaker
-        print(f"set speaker: {self.setSpeaker}") 
-        print(f"speaker is set: {self.send_audio_event.is_set()}") 
+        print(f"set speaker: {self.setSpeaker}")
         
         if self.send_audio_event.is_set():
             self.send_audio_event.clear()
         else:
             self.send_audio_event.set()
 
+    # Sends audio data to the server
     def audio_sender(self):
         print("Audio thread started")
 
         while True:
-            data = self.stream.read(CHUNK, exception_on_overflow=False) # Attempt removing 4 bytes for AUD:
-            # data = self.stream.read(CHUNK, exception_on_overflow=False) # Attempt removing 4 bytes for AUD:
-
+            data = self.stream.read(CHUNK, exception_on_overflow=False) #
+            # Only send when the audio event is activated
             if self.send_audio_event.is_set():
                 try:
-                    # self.client_socket.sendall(b"AUD:" + data)
                     self.aud_socket.sendall(data)
                 except Exception as e:
                     print("Audio send error:", e)
@@ -1763,7 +1714,8 @@ class MovieDirectorGUI(ctk.CTk):
             self.client_socket.sendall(message.encode("utf-8"))
         except Exception as e:
             print(f"Error found while sending the message: {e}")
-            
+           
+    # Activate the trucking options which deactivates the tracking if it's on
     def set_trucking(self, option):
         if option == "Forward":
             self.toggleForwardTrucking()
@@ -1785,6 +1737,7 @@ class MovieDirectorGUI(ctk.CTk):
                 print("Deactivate backward trucking")
                 self.backward_trucking.configure(fg_color=("#3B8ED0", "#1F6AA5"))
         
+    # Activate the tracking options which deactivates the trucking if it's on
     def set_tracking(self, option):
         if option == "Sideways":
             self.toggleSidewayTracking()
@@ -1806,7 +1759,7 @@ class MovieDirectorGUI(ctk.CTk):
                 print("Deactivate rotate tracking")
                 self.rotate_tracking.configure(fg_color=("#3B8ED0", "#1F6AA5"))
             
-    
+    # Toggle the tracking options, closes the trucking and update the states
     def toggleTrackingOptions(self):
         if not self.showTrackingOptions:
             self.tracking = False
@@ -1822,6 +1775,7 @@ class MovieDirectorGUI(ctk.CTk):
             self.backward_trucking.configure(fg_color=("#3B8ED0", "#1F6AA5"))
             self.forward_trucking.configure(fg_color=("#3B8ED0", "#1F6AA5"))
             
+    # Toggle the trucking options, closes the tracking and update the states
     def toggleTruckingOptions(self):
         if not self.showTruckingOptions:
             self.forwardTrucking = False
@@ -1834,60 +1788,50 @@ class MovieDirectorGUI(ctk.CTk):
             self.sideway_tracking.configure(fg_color=("#3B8ED0", "#1F6AA5"))
             self.rotate_tracking.configure(fg_color=("#3B8ED0", "#1F6AA5"))
         
+    # Toggle the forward trucking from the trucking options
     def toggleForwardTrucking(self):
         if not self.forwardTrucking:
             self.tracking = False
             self.forwardTrucking = True
             self.backwardTrucking = False
-            # self.manualMove = False
             self.rotate_track = False
         else:
             self.forwardTrucking = False
             
+    # Toggle the backward trucking from the trucking options
     def toggleBackwardTrucking(self):
         if not self.backwardTrucking:
             self.tracking = False
             self.forwardTrucking = False
             self.backwardTrucking = True
-            # self.manualMove = False
             self.rotate_track = False
         else:
             self.backwardTrucking = False
             
+    # toggle the sideway track button from the tracking options
     def toggleSidewayTracking(self):
         if not self.tracking:
             self.tracking = True
             self.forwardTrucking = False
             self.backwardTrucking = False
-            # self.manualMove = False
             self.rotate_track = False
         else:
             self.tracking = False
             
+    # toggle the rotate track button from the tracking options
     def toggleRotateTrack(self):
         if not self.rotate_track:
             self.tracking = False
             self.forwardTrucking = False
             self.backwardTrucking = False
-            # self.manualMove = False
             self.rotate_track = True
         else:
             self.rotate_track = False
-        
-    def toggleManual(self):
-        if not self.manualMove:
-            self.tracking = False
-            self.forwardTrucking = False
-            self.backwardTrucking = False
-            self.manualMove = True
-            self.rotate_track = False
-        else:
-            self.manualMove = False
             
     def updateLeftbutton(self, button, idx):
-        if idx in [3, 4, 5]:
+        if idx in [2, 3]:
             for i, btn in enumerate(self.left_buttons):
-                if i in [3, 4, 5]:
+                if i in [2, 3]:
                     if btn != button:
                         btn.configure(fg_color=("#3B8ED0", "#1F6AA5"))
                         
@@ -1898,11 +1842,12 @@ class MovieDirectorGUI(ctk.CTk):
                     if btn != button:
                         btn.configure(fg_color=("#3B8ED0", "#1F6AA5"))
         
+# Starting the client
 def start_client():
     try:
         # Create BOTH sockets first
-        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        aud_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # client socket for streaming, robot and camera controls
+        aud_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Audio socket for smooth audio transfer
 
         # Connect command FIRST (important for responsiveness)
         client_socket.connect((SERVER_HOST, SERVER_PORT))
@@ -1920,19 +1865,19 @@ def start_client():
         print(f"Connection to server failed. Is it running?")
 
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error from starting the client: {e}")
 
     finally:
         # Clean shutdown
         try:
             client_socket.close()
-        except:
-            pass
+        except Exception as e:
+            print(f"Error found while closing the client socket: {e}")
 
         try:
             aud_sock.close()
-        except:
-            pass
+        except Exception as e:
+            print(f"Error found while closing the audio socket: {e}")
 
 if __name__ == "__main__":
     start_client()
