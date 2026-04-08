@@ -45,9 +45,9 @@ RECORD_SECONDS = 3
 WAVE_OUTPUT_FILENAME = "output.wav"
 
 # !! Change into the Robot's IP when testing with the group5 SD card
-# SERVER_HOST = "172.17.10.222" # Raspy's with CPSC584 wifi
+SERVER_HOST = "172.17.10.222" # Raspy's with CPSC584 wifi
 # SERVER_HOST = "172.17.10.159" # Raspy's with CPSC584 wifi
-SERVER_HOST = "localhost" # localhost
+# SERVER_HOST = "localhost" # localhost
 SERVER_PORT = 5001
 AUD_PORT = 5002
 
@@ -69,8 +69,8 @@ class MovieDirectorGUI(ctk.CTk):
         self.speed = 90
 
         # For video streaming
-        # self.stream_url = "http://172.17.10.222:8080/stream.mjpg"
-        self.stream_url = "http://localhost:8080/stream.mjpg"
+        self.stream_url = "http://172.17.10.222:8080/stream.mjpg"
+        # self.stream_url = "http://localhost:8080/stream.mjpg"
         project_dir = os.path.dirname(os.path.abspath(__file__))
 
         # ---- Recording setup ----
