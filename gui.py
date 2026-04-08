@@ -49,8 +49,9 @@ WAVE_OUTPUT_FILENAME = "output.wav"
 # !! Change into the Robot's IP when testing with the group5 SD card
 # SERVER_HOST = "172.17.10.222" # Raspy's with CPSC584 wifi
 # SERVER_HOST = "172.17.10.159" # Raspy's with CPSC584 wifi
-SERVER_HOST = "10.0.0.162" # localhost
-SERVER_HOST = "10.0.0.116" # localhost
+# SERVER_HOST = "10.0.0.162" # localhost
+# SERVER_HOST = "10.0.0.116" # localhost
+SERVER_HOST = "10.0.0.6" # localhost
 SERVER_PORT = 5001
 AUD_PORT = 5002
 
@@ -75,6 +76,7 @@ class MovieDirectorGUI(ctk.CTk):
         self.stream_url = "http://172.17.10.222:8080/stream.mjpg"
         self.stream_url = "http://10.0.0.162:8080/stream.mjpg"
         self.stream_url = "http://10.0.0.116:8080/stream.mjpg"
+        self.stream_url = "http://10.0.0.6:8080/stream.mjpg"
         project_dir = os.path.dirname(os.path.abspath(__file__))
 
         # ---- Recording setup ----
@@ -132,19 +134,19 @@ class MovieDirectorGUI(ctk.CTk):
         # !!! 
         # Left side icons: camera, focus, zoom
         left_icons = ["icons/camera.png", "icons/focus2.png", "icons/zoom.png", "icons/tracking.png", "icons/trucking.png", "icons/joystick.png"]
-        left_photos = []
+        # left_photos = []
         self.left_buttons = []
         
 
-        left_icons = [
-            "icons/camera.png",
-            "icons/focus2.png",
-            "icons/zoom.png",
-            "icons/autofocus.png",
-            "icons/colorFilter.png",
-            "icons/joystick.png",
-            "icons/lock.png"
-        ]
+        # left_icons = [
+        #     "icons/camera.png",
+        #     "icons/focus2.png",
+        #     "icons/zoom.png",
+        #     "icons/autofocus.png",
+        #     "icons/colorFilter.png",
+        #     "icons/joystick.png",
+        #     "icons/lock.png"
+        # ]
         left_photos = []
 
         for i, icon in enumerate(left_icons):
@@ -770,6 +772,7 @@ class MovieDirectorGUI(ctk.CTk):
         else:
             print("Stream opened:", self.stream_url)
             self.set_status("Stream opened")
+            self.after(3000, lambda:self.set_status(""))
             threading.Thread(target=self._reader_loop, daemon=True).start()
 
         # Initialize PoseLandmarker once
@@ -933,6 +936,7 @@ class MovieDirectorGUI(ctk.CTk):
         self.video_name_entry.delete(0, "end")
         self.set_status("Recording started")
         print("Recording started:", self.recording_filename)
+        self.after(3000, lambda:self.set_status(""))
 
     def stop_recording(self):
         if not self.is_recording:
@@ -1256,14 +1260,15 @@ class MovieDirectorGUI(ctk.CTk):
             else:
                 print("close camera shots")
         
-        if idx == 2: # Zoom button is clicked
-            self.showZoom = not self.showZoom
-            if self.showZoom:
-                self.zoom_slider.place(relx=0.5, rely=0.8, relwidth=0.7, relheight=0.06, anchor='center')
+        if idx == 2:  # Zoom button
+            was_open = self.showZoom
+            self._close_all_overlays()
+            if not was_open:
+                self.showZoom = True
+                self.zoom_slider.place(relx=0.5, rely=0.9, relwidth=0.7, relheight=0.06, anchor='center')
                 print("open zoom slider")
             else:
                 print("close zoom slider")
-                self.zoom_slider.place_forget()
                 
         elif idx == 3:
             self.showTrackingOptions = not self.showTrackingOptions
@@ -1594,7 +1599,7 @@ class MovieDirectorGUI(ctk.CTk):
         # Starting rectangle
         # x, y = 0, 0
         # rw, rh = w, h
-        scale = 0.8
+        scale = 1
         sw, sh = int(w * scale), int(h * scale)
         ox, oy = (w - sw) // 2, (h - sh) // 2
         x, y = ox, oy
