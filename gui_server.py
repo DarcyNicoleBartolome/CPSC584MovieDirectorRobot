@@ -357,42 +357,51 @@ def handle_audio(conn):
 #region ######### Socket Programming / Start running the server #########
    
 def start_server():
-   """ Start the server and listen for incoming connections. """
-   # Audio socket
-   aud_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-   aud_sock.bind((HOST, AUD_PORT))
-   aud_sock.listen(1)
-   
-   server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-   server_socket.bind((HOST, PORT))
-   server_socket.listen(5)
-   print(f"Server started and listening on {HOST}:{PORT}")
-      
-   threading.Thread(target=VideoStream).start()
-      
-   while True:
-         try:
-            # Accept new client connections and start a thread for each client
-            client_socket, client_address = server_socket.accept()
-            aud_conn, _ = aud_sock.accept()
-            
-            # If connections are successful, create threads for handling robot and aud data
-            threading.Thread(target=handle_client, args=(client_socket, client_address)).start()
-            threading.Thread(target=handle_audio, args=(aud_conn,), daemon=True).start()
-         except Exception as e:
-            print(f"Error accepting connections: {e}")
-            
-         except KeyboardInterrupt:
-            print("\nShutting down server...")
+    """ Start the server and listen for incoming connections. """
+    aud_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-         finally:
-            print("Closing sockets...")
-            server_socket.close()
-            aud_sock.close()
-            
-         current_pose = crawler.current_step_all_leg_value()
-         crawler.do_step(current_pose, speed) # Attempt not avoid the robot to stay relaxed
-               
+    try:
+        aud_sock.bind((HOST, AUD_PORT))
+        aud_sock.listen(1)
+
+        server_socket.bind((HOST, PORT))
+        server_socket.listen(5)
+
+        print(f"Server started and listening on {HOST}:{PORT}")
+
+        threading.Thread(target=VideoStream, daemon=True).start()
+
+        while True:
+            try:
+                client_socket, client_address = server_socket.accept()
+                aud_conn, _ = aud_sock.accept()
+
+                threading.Thread(
+                    target=handle_client,
+                    args=(client_socket, client_address),
+                    daemon=True
+                ).start()
+
+                threading.Thread(
+                    target=handle_audio,
+                    args=(aud_conn,),
+                    daemon=True
+                ).start()
+
+            except Exception as e:
+                print(f"Error accepting connections: {e}")
+
+            current_pose = crawler.current_step_all_leg_value()
+            crawler.do_step(current_pose, speed)
+
+    except KeyboardInterrupt:
+        print("\nShutting down server...")
+
+    finally:
+        print("Closing sockets...")
+        server_socket.close()
+        aud_sock.close()
 
 # Handle incoming client data
 def handle_client(client_socket, client_address):
