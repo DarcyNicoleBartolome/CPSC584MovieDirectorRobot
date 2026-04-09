@@ -392,6 +392,7 @@ def handle_client(client_socket, client_address):
    print(f"Connection from {client_address}")
    global speed 
    speed = 90 # Reset speed to 90
+   setup = [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT]]
    crawler.do_step('stand', speed)
    
    try:

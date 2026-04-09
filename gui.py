@@ -1485,17 +1485,18 @@ class MovieDirectorGUI(ctk.CTk):
             percentage_leftShoulder = max(0, min(100, ((w - left_sx) / (1 * w / 2)) * 100))
             print(percentage_rightShoulder, percentage_leftShoulder)
             
-            while not (mid_point_shoulder > (w/5) * 2 and mid_point_shoulder < (w/5) * 3):
-                if percentage_rightShoulder < 70:
-                    self.sendMessage(f"move:left")
-                    print(f"move:left")
-                elif percentage_leftShoulder < 70:
-                    self.sendMessage(f"move:right")
-                    print(f"move:right")
+            if percentage_rightShoulder < 70:
+                self.sendMessage(f"move:left")
+                # time.sleep(1)
+                print(f"move:left")
+            elif percentage_leftShoulder < 70:
+                self.sendMessage(f"move:right")
+                # time.sleep(1)
+                print(f"move:right")
             
-            self.symmetry = False
+            # self.symmetry = False
                 
-            time.sleep(2)
+            # time.sleep(2)
                 
 
     def repeat_action(self, count, move_cmd, zoom_step):
@@ -1634,10 +1635,10 @@ class MovieDirectorGUI(ctk.CTk):
                 self.showCenterSymmetry = True
                 self.symmetry = not self.symmetry
                 button.configure(fg_color="green", hover_color = "#21451E")
-                self.after(3000, lambda:button.configure(fg_color=("#3B8ED0", "#1F6AA5")))
-            # else:
-            #     button.configure(fg_color=("#3B8ED0", "#1F6AA5"))
-            # print(f"Center symmetry overlay: {'on' if self.showCenterSymmetry else 'off'}")
+                # self.after(3000, lambda:button.configure(fg_color=("#3B8ED0", "#1F6AA5")))
+            else:
+                button.configure(fg_color=("#3B8ED0", "#1F6AA5"))
+            print(f"Center symmetry overlay: {'on' if self.showCenterSymmetry else 'off'}")
                 
         else:
             self._close_all_composition_overlays()
