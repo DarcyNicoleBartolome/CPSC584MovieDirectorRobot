@@ -44,13 +44,12 @@ RATE = 44100
 RECORD_SECONDS = 3
 WAVE_OUTPUT_FILENAME = "output.wav"
 
-# !! Change into the Robot's IP when testing with the group5 SD card
+# !! Change into the Robot's IP when connecting with the group5 SD card
 SERVER_HOST = "172.17.10.222" # Raspy's with CPSC584 wifi
-# SERVER_HOST = "172.17.10.159" # Raspy's with CPSC584 wifi
-# SERVER_HOST = "localhost" # localhost
 SERVER_PORT = 5001
 AUD_PORT = 5002
 
+# Set to dark mode and color theme to ctk blue theme
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
@@ -58,9 +57,11 @@ ctk.set_default_color_theme("blue")
 class MovieDirectorGUI(ctk.CTk):
     def __init__(self, client_socket, aud_socket):
         super().__init__()
+        # Initialize the client and audio sockets
         self.client_socket = client_socket
         self.aud_socket = aud_socket
         
+        # Set the Window information
         self.title("Movie Director Miniature")
         self.geometry("1000x650")
         self.minsize(850, 560)
@@ -70,13 +71,24 @@ class MovieDirectorGUI(ctk.CTk):
 
         # For video streaming
         self.stream_url = "http://172.17.10.222:8080/stream.mjpg"
-        # self.stream_url = "http://localhost:8080/stream.mjpg"
         project_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        # Initialize the golden spiral state overlay
+        self.golden_overlay = None
+        golden_path = os.path.join(project_dir, "icons", "goldenspiral.png")
+
+        if os.path.exists(golden_path):
+            self.golden_overlay = cv2.imread(golden_path, cv2.IMREAD_UNCHANGED)
+            if self.golden_overlay is None:
+                print("Could not load golden spiral overlay")
+        else:
+            print("golden_spiral.png not found:", golden_path)
 
         # ---- Recording setup ----
         self.recordings_dir = os.path.join(project_dir, "recordings")
         os.makedirs(self.recordings_dir, exist_ok=True)
 
+        # Initialize recording states
         self.is_recording = False
         self.is_paused = False
         self.record_start_time = None
@@ -135,17 +147,6 @@ class MovieDirectorGUI(ctk.CTk):
         
         left_photos = []
         self.left_buttons = []
-        
-
-        # left_icons = [
-        #     "icons/camera.png",
-        #     "icons/focus2.png",
-        #     "icons/zoom.png",
-        #     "icons/autofocus.png",
-        #     "icons/colorFilter.png",
-        #     "icons/joystick.png",
-        #     "icons/lock.png"
-        # ]
 
         """Set up the left buttons"""
         for i, icon in enumerate(left_icons):
@@ -690,7 +691,7 @@ class MovieDirectorGUI(ctk.CTk):
             speaker_photo = ImageTk.PhotoImage(speaker_img)
             self.speaker_photo = speaker_photo
 
-            speaker = ctk.CTkButton(
+            self.speaker = ctk.CTkButton(
                 self.utility,
                 image=speaker_photo,
                 text="",
@@ -699,10 +700,10 @@ class MovieDirectorGUI(ctk.CTk):
                 corner_radius=14,
                 command=self.directorSpeaker
             )
-            speaker.pack(side="left", padx=6)
+            self.speaker.pack(side="left", padx=6)
         except Exception as e:
             print(f"Error loading speaker image: {e}")
-            speaker = ctk.CTkButton(
+            self.speaker = ctk.CTkButton(
                 self.utility,
                 text="🔊",
                 width=52,
@@ -710,7 +711,7 @@ class MovieDirectorGUI(ctk.CTk):
                 corner_radius=14,
                 command=self.directorSpeaker
             )
-            speaker.pack(side="left", padx=6)
+            self.speaker.pack(side="left", padx=6)
 
         self.is_dark_mode = True
 
@@ -1256,7 +1257,7 @@ class MovieDirectorGUI(ctk.CTk):
             self.showTrackingOptions = not self.showTrackingOptions
             self.toggleTrackingOptions()
             if self.showTrackingOptions:
-                button.configure(fg_color="green")
+                button.configure(fg_color="green", hover_color = "#21451E")
                 self.zoom_slider.place_forget()
                 self.showZoom = False
                 self.trucking_options.place_forget()
@@ -1270,7 +1271,7 @@ class MovieDirectorGUI(ctk.CTk):
             self.showTruckingOptions = not self.showTruckingOptions
             self.toggleTruckingOptions()
             if self.showTruckingOptions:
-                button.configure(fg_color="green")
+                button.configure(fg_color="green", hover_color = "#21451E")
                 self.zoom_slider.place_forget()
                 self.showZoom = False
                 self.tracking_options.place_forget()
@@ -1347,7 +1348,7 @@ class MovieDirectorGUI(ctk.CTk):
         elif self.tracking:
             self.autoTracking(points, w)
         elif self.backwardTrucking:
-            self.autoBackwardtrucking(points, w)
+            self.autoBackwardtrucking(left_sx, right_sx)
         elif self.rotate_track:
             self.autoRotate(points, w)
         elif self.ruleofthirds:
@@ -1365,12 +1366,12 @@ class MovieDirectorGUI(ctk.CTk):
         now = time.time()
         if now - self.last_auto_time < 1.5:
             return
-        # Move left if atleast 2 points of the torso is at w/5 at the left of the screen
-        if sum(1 for x in list if x < w/5) >= 2:
+        # Move left if atleast 2 points of the torso is at 2w/5 at the left of the screen
+        if sum(1 for x in list if x < w/5*2) >= 2:
             self.sendMessage(f"move:left")
     
-        # Move right if atleast 2 points of the torso is at w/5 at the right of the screen
-        if sum(1 for x in list if x > w/5*4) >= 2:
+        # Move right if atleast 2 points of the torso is at 3w/5 at the right of the screen
+        if sum(1 for x in list if x > w/5*3) >= 2:
             self.sendMessage(f"move:right")
                 
     
@@ -1384,6 +1385,7 @@ class MovieDirectorGUI(ctk.CTk):
         if now - self.last_auto_time < 1.5:
             return
         # Move forward if shoulders are too far
+        print(abs(left_sx-right_sx)) # Debugging
         if (abs(left_sx-right_sx) < 100):
             self.sendMessage(f"move:up")
     
@@ -1397,7 +1399,7 @@ class MovieDirectorGUI(ctk.CTk):
         if now - self.last_auto_time < 1.5:
             return
         # Move backward if shoulders are too close
-        # print(abs(left_sx-right_sx))
+        print(abs(left_sx-right_sx)) # Debugging
         if (abs(left_sx-right_sx) > 120):
             self.sendMessage(f"move:down")
         
@@ -1420,7 +1422,7 @@ class MovieDirectorGUI(ctk.CTk):
             self.sendMessage(f"move:rotate right")
             time.sleep(1)
         
-    # 
+    # Move the Robot to set the subjec in one of the rule of thirds points
     def autoRuleofThirds(self, list, left_sx, right_sx, right_hx, left_hx, w):
         if not hasattr(self, "last_auto_time"):
             self.last_auto_time = 0
@@ -1432,7 +1434,7 @@ class MovieDirectorGUI(ctk.CTk):
         mid_point_shoulder = abs((1-(1/2))*left_sx + (1/2)*right_sx)
         mid_point_hip = abs((1-(1/2))*left_hx + (1/2)*right_hx)
         
-        # Move left if atleast 3 points of the torso is at w/5 at the left of the screen
+        # Move left if atleast 3 points of the torso is at w/5 * 2 at the left of the screen
         if sum(1 for x in list if x < (w/5) * 2) > 2:
             # Checks which torso is closer to one of the rule of thirds line (w/3)
             check_leftLine = max(0, min(100, (mid_point_shoulder * 3 / (1 * w)) * 100)) 
@@ -1466,7 +1468,7 @@ class MovieDirectorGUI(ctk.CTk):
         self.ruleofthirds = False
         
         
-    # Calculate the center of attention based on teh subject
+    # Calculate the center of attention based on the subject
     def autoSymmetry(self, right_sx, left_sx, w):
         if not hasattr(self, "last_auto_time"):
             self.last_auto_time = 0
@@ -1477,17 +1479,19 @@ class MovieDirectorGUI(ctk.CTk):
             return
         if self.symmetry:
             shoulder_length = abs(left_sx-right_sx)
+            mid_point_shoulder = abs((1-(1/2))*left_sx + (1/2)*right_sx)
             
             percentage_rightShoulder = max(0, min(100, (right_sx * 2 / (1 * w)) * 100))
             percentage_leftShoulder = max(0, min(100, ((w - left_sx) / (1 * w / 2)) * 100))
             print(percentage_rightShoulder, percentage_leftShoulder)
             
-            if percentage_rightShoulder < 70:
-                self.sendMessage(f"move:left")
-                print(f"move:left")
-            elif percentage_leftShoulder < 70:
-                self.sendMessage(f"move:right")
-                print(f"move:right")
+            while not (mid_point_shoulder > (w/5) * 2 and mid_point_shoulder < (w/5) * 3):
+                if percentage_rightShoulder < 70:
+                    self.sendMessage(f"move:left")
+                    print(f"move:left")
+                elif percentage_leftShoulder < 70:
+                    self.sendMessage(f"move:right")
+                    print(f"move:right")
             
             self.symmetry = False
                 
@@ -1512,51 +1516,27 @@ class MovieDirectorGUI(ctk.CTk):
         
 
     def _draw_golden_spiral(self, image, w, h):
-        overlay = image.copy()
-        phi = 1.618
-        color = (0, 215, 255)  # gold in BGR->RGB
-        thickness = 2
+        if self.golden_overlay is None:
+            return image
 
-        # !!!!
-        # Starting rectangle
-        # x, y = 0, 0
-        # rw, rh = w, h
-        scale = 1
-        sw, sh = int(w * scale), int(h * scale)
-        ox, oy = (w - sw) // 2, (h - sh) // 2
-        x, y = ox, oy
-        rw, rh = sw, sh
+        overlay = cv2.resize(self.golden_overlay, (w, h), interpolation=cv2.INTER_AREA)
+        overlay = cv2.cvtColor(overlay, cv2.COLOR_BGRA2RGBA)
 
-        for i in range(10):
-            if i % 4 == 0:
-                sq = int(rh)
-                center = (x + sq, y + sq)
-                cv2.ellipse(overlay, center, (sq, sq), 180, 0, 90, color, thickness, cv2.LINE_AA)
-                x += sq
-                rw -= sq
-            elif i % 4 == 1:
-                sq = int(rw)
-                center = (x, y + sq)
-                cv2.ellipse(overlay, center, (sq, sq), 0, 270, 360, color, thickness, cv2.LINE_AA)
-                y += sq
-                rh -= sq
-            elif i % 4 == 2:
-                sq = int(rh)
-                center = (x - 1, y)
-                cv2.ellipse(overlay, center, (sq, sq), 0, 0, 90, color, thickness, cv2.LINE_AA)
-                rw -= sq
-                x -= sq
-            else:
-                sq = int(rw)
-                center = (x + sq, y)
-                cv2.ellipse(overlay, center, (sq, sq), 0, 90, 180, color, thickness, cv2.LINE_AA)
-                rh -= sq
-                y -= sq
+        # if png has alpha channel
+        if overlay.shape[2] == 4:
+            overlay_rgb = overlay[:, :, :3]
+            alpha = overlay[:, :, 3] / 255.0 * 0.5
 
-            if rw < 2 or rh < 2:
-                break
+            for c in range(3):
+                image[:, :, c] = (
+                    alpha * overlay_rgb[:, :, c] +
+                    (1 - alpha) * image[:, :, c]
+                ).astype(np.uint8)
 
-        cv2.addWeighted(overlay, 0.6, image, 0.4, 0, image)
+        else:
+            # fallback if no alpha channel
+            image = cv2.addWeighted(image, 0.8, overlay, 0.2, 0)
+
         return image
 
     
@@ -1568,7 +1548,6 @@ class MovieDirectorGUI(ctk.CTk):
         print(f"Theme changed to {mode}")
         
     def _draw_rule_of_thirds(self, image, w, h):
-        # print("drawing rule of thirds")
         overlay = image.copy()
         
         # Rule of thirds intersection points
@@ -1608,51 +1587,58 @@ class MovieDirectorGUI(ctk.CTk):
         return image
 
     def _close_all_composition_overlays(self):
-        """Close all composition overlays (golden ratio, center symmetry)."""
+        """Close all composition overlays (golden ratio, center symmetry and rule of thirds)."""
         self.showGoldenRatio = False
         self.showCenterSymmetry = False
         self.showRuleofThirds = False
 
 
     def on_right_action(self, idx, button):
-        # Pressing the Dolly In button
-        if idx == 1:
-            self.repeat_action(5, "move:up", -0.1)
-        # Pressing the Dolly Out button
-        elif idx == 2:
-            self.repeat_action(5, "move:down", 0.1)
-                
-        # Adjust position by rule of thirds
-        if idx == 3: # If rule of thirds is clicked
-            self.ruleofthirds = not self.ruleofthirds
-            was_on = self.showRuleofThirds
-            self._close_all_composition_overlays()
-            if not was_on:
-                self.showRuleofThirds = True
-            print(f"Rule of thirds overlay: {'on' if self.showRuleofThirds else 'off'}")
-                
-        # Adjust position by Center of attention
-        if idx == 4: # Center of attention is clicked
-            self.symmetry = not self.symmetry
-            if self.symmetry:
-                button.configure(fg_color="green")
-            else:
-                button.configure(fg_color=("#3B8ED0", "#1F6AA5"))
-             
-            
         print("Right button", idx)
         if idx == 0:  # Golden ratio
             was_on = self.showGoldenRatio
             self._close_all_composition_overlays()
             if not was_on:
                 self.showGoldenRatio = True
+                button.configure(fg_color="green", hover_color = "#21451E")
+            else:
+                button.configure(fg_color=("#3B8ED0", "#1F6AA5"))
             print(f"Golden ratio overlay: {'on' if self.showGoldenRatio else 'off'}")
-        elif idx == 4:  # Center of symmetry
+                
+        
+        # Pressing the Dolly In button
+        elif idx == 1:
+            self.repeat_action(5, "move:up", -0.1)
+        # Pressing the Dolly Out button
+        elif idx == 2:
+            self.repeat_action(5, "move:down", 0.1)
+            
+        # Adjust position by rule of thirds
+        elif idx == 3: # If rule of thirds is clicked
+            self.ruleofthirds = not self.ruleofthirds
+            was_on = self.showRuleofThirds
+            print(was_on)
+            self._close_all_composition_overlays()
+            print(was_on)
+            if not was_on:
+                self.showRuleofThirds = True
+                button.configure(fg_color="green", hover_color = "#21451E")
+                self.after(3000, lambda:button.configure(fg_color=("#3B8ED0", "#1F6AA5")))
+            print(f"Rule of thirds overlay: {'on' if self.showRuleofThirds else 'off'}")
+                
+        # Adjust position by Center of attention
+        elif idx == 4: # Center of attention is clicked
             was_on = self.showCenterSymmetry
             self._close_all_composition_overlays()
             if not was_on:
                 self.showCenterSymmetry = True
-            print(f"Center symmetry overlay: {'on' if self.showCenterSymmetry else 'off'}")
+                self.symmetry = not self.symmetry
+                button.configure(fg_color="green", hover_color = "#21451E")
+                self.after(3000, lambda:button.configure(fg_color=("#3B8ED0", "#1F6AA5")))
+            # else:
+            #     button.configure(fg_color=("#3B8ED0", "#1F6AA5"))
+            # print(f"Center symmetry overlay: {'on' if self.showCenterSymmetry else 'off'}")
+                
         else:
             self._close_all_composition_overlays()
 
@@ -1688,8 +1674,10 @@ class MovieDirectorGUI(ctk.CTk):
         
         if self.send_audio_event.is_set():
             self.send_audio_event.clear()
+            self.speaker.configure(fg_color = ("#3B8ED0", "#1F6AA5"))
         else:
             self.send_audio_event.set()
+            self.speaker.configure(fg_color = "green", hover_color = "#21451E")
 
     # Sends audio data to the server
     def audio_sender(self):
@@ -1721,7 +1709,7 @@ class MovieDirectorGUI(ctk.CTk):
             self.toggleForwardTrucking()
             if self.forwardTrucking:
                 print("Activate forward trucking")
-                self.forward_trucking.configure(fg_color="green")
+                self.forward_trucking.configure(fg_color="green", hover_color = "#21451E")
                 self.backward_trucking.configure(fg_color=("#3B8ED0", "#1F6AA5"))
             else:
                 print("Deactivate forward trucking")
@@ -1731,7 +1719,7 @@ class MovieDirectorGUI(ctk.CTk):
             self.toggleBackwardTrucking()
             if self.backwardTrucking:
                 print("Activate backward trucking")
-                self.backward_trucking.configure(fg_color="green")
+                self.backward_trucking.configure(fg_color="green", hover_color = "#21451E")
                 self.forward_trucking.configure(fg_color=("#3B8ED0", "#1F6AA5"))
             else:
                 print("Deactivate backward trucking")
@@ -1743,7 +1731,7 @@ class MovieDirectorGUI(ctk.CTk):
             self.toggleSidewayTracking()
             if self.tracking:
                 print("Activate sideway tracking")
-                self.sideway_tracking.configure(fg_color="green")
+                self.sideway_tracking.configure(fg_color="green", hover_color = "#21451E")
                 self.rotate_tracking.configure(fg_color=("#3B8ED0", "#1F6AA5"))
             else:
                 print("Deactivate sideway tracking")
@@ -1754,7 +1742,7 @@ class MovieDirectorGUI(ctk.CTk):
             if self.rotate_track:
                 print("Activate sideway tracking")
                 self.sideway_tracking.configure(fg_color=("#3B8ED0", "#1F6AA5"))
-                self.rotate_tracking.configure(fg_color="green")
+                self.rotate_tracking.configure(fg_color="green", hover_color = "#21451E")
             else:
                 print("Deactivate rotate tracking")
                 self.rotate_tracking.configure(fg_color=("#3B8ED0", "#1F6AA5"))

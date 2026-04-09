@@ -1,6 +1,5 @@
 
 import threading
-# import time
 import os
 
 from picrawler import Picrawler
@@ -21,11 +20,7 @@ import io
 
 import subprocess
 
-# !! TODO LOOK AT CHUNKS IN AUDIO AND SUCH!!!!
-
-# !! Change into the Robot's IP when testing with the group5 SD card
 HOST = "172.17.10.222" # Raspy's with CPSC584 wifi
-# HOST = "10.0.0.116" # Raspy's with CPSC584 wifi
 PORT = 5001
 AUD_PORT = 5002
 
@@ -63,15 +58,12 @@ stream = p.open(format=FORMAT,
                 rate=RATE,
                 output=True,
                 frames_per_buffer=CHUNK)
-               #  frames_per_buffer=CHUNK-4) # -4 for AUD:
 
 
 # Initialize picamera
 picam2 = Picamera2()
 size = None
 full_res = None
-# size = picam2.capture_metadata()['ScalerCrop'][2:]
-# full_res = picam2.camera_properties['PixelArraySize']
 
 #region ######### Video streaming #########
 class StreamingOutput(io.BufferedIOBase):
@@ -124,10 +116,6 @@ class Handler(BaseHTTPRequestHandler):
                 self.wfile.write(b"\r\n")
         except Exception:
             pass
-         
-def manual_autofocus(value):
-   global picam2
-   picam2.set_controls({"AfMode": controls.AfModeEnum.Manual, "LensPosition": float(value)})
    
          
 def zoom(value, state):
@@ -159,12 +147,12 @@ def VideoStream():
    global picam2
    global size
    global full_res
-   #  picam2 = Picamera2()
    
    # You can change size/fps later
    picam2.configure(picam2.create_video_configuration(main={"size": (640, 480)}))
    picam2.start_recording(MJPEGEncoder(), FileOutput(output))
    
+   # Set the size and full resolution (vital for the zoom function)
    size = picam2.capture_metadata()['ScalerCrop'][2:]
    full_res = picam2.camera_properties['PixelArraySize']
 
@@ -177,23 +165,14 @@ def VideoStream():
 #endregion ######### Video streaming #########
 
 #region ######### Crawler Movement #########
-def stand(speed, current): # make the robot stand up
-   test = [i for i in current]
-   i = 0 # counter
-   for leg in test:
-      if leg[2] != Z_DEFAULT:
-          test[i][2] = Z_DEFAULT
-          i += 1
 
-   crawler.do_step(test, speed)
-
+# Robot move to the left side
 def move_sideLeft(speed, current, amount=2.5):
    global leg_mode
    crawler.stand_position = crawler.stand_position + 1 & 1
-   current = crawler.current_step_all_leg_value()
-   
    step_amount = amount
    
+   # List of the step of moving to the left, starting with the left backleg
    left_backleg_move =  [
       ## [right front],[left front],[left rear],[right rear]
       
@@ -222,7 +201,7 @@ def move_sideLeft(speed, current, amount=2.5):
       
    ]
    
-   
+   # List of the step of moving to the left, starting with the left frontleg
    left_frontleg_move =  [
       
       # Lifts the left front leg
@@ -247,6 +226,7 @@ def move_sideLeft(speed, current, amount=2.5):
       [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT],[X_START, X_DEFAULT, Z_DEFAULT],[Y_START, X_DEFAULT, Z_DEFAULT]], 
    ]
    
+   # Determine which front or back leg should move
    if leg_mode == 0:
       for coord in left_backleg_move:
          crawler.do_step(coord, speed)
@@ -261,16 +241,15 @@ def move_sideLeft(speed, current, amount=2.5):
       leg_mode = 0
    
    
-   
+# Robot move to the right side
 def move_sideRight(speed, current, amount=2.5):
    global leg_mode
    
-   stand(speed, current)
    crawler.stand_position = crawler.stand_position + 1 & 1
-   current = crawler.current_step_all_leg_value()
    
    step_amount = amount
    
+   # List of the step of moving to the right, starting with the right backleg
    right_backleg_move =  [
       
       # Lifts the right rear leg
@@ -296,7 +275,7 @@ def move_sideRight(speed, current, amount=2.5):
       
    ]
    
-   
+   # List of the step of moving to the right, starting with the right frontleg
    right_frontleg_move =  [
       
       # Lifts the right front leg
@@ -321,6 +300,7 @@ def move_sideRight(speed, current, amount=2.5):
       [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[X_DEFAULT, Y_DEFAULT, Z_DEFAULT],[Y_START, X_DEFAULT, Z_DEFAULT],[X_START, X_DEFAULT, Z_DEFAULT]], 
    ]
    
+   # Determine which front or back right should move
    if leg_mode == 0:
       for coord in right_backleg_move:
          crawler.do_step(coord, speed)
@@ -332,36 +312,38 @@ def move_sideRight(speed, current, amount=2.5):
          print(coord)
       leg_mode = 0
 
+# Robot rotate left
 def move_rotateLeft(speed, current_pose):
    crawler.do_action('turn left', 1, speed)
-   
+# Robot rotate right
 def move_rotateRight(speed, current_pose):
    crawler.do_action('turn right', 1, speed)
-
+# Robot move forward
 def moveUp(speed, current):
-   
    crawler.do_action('forward', 1, speed)
-
+# Robot move backward
 def moveDown(speed, current):
    crawler.do_action('backward', 1, speed)
-
+# Robot look up
 def lookUp(speed, current):
    coords = [
       [[45, 45, -76], [45, 0, -76], [45, 0, -38], [45, 45, -30]],
    ]
-
+   # Play all the steps
    for coord in coords:
       crawler.do_step(coord, speed)
 
-
+# Robot look down
 def lookDown(speed, current):
     coords = [
         # stand
         [[45, 45, -28], [45, 0, -40], [45, 0, -68], [45, 45, -76]],
     ]
+    # Play all the steps
     for coord in coords:
         crawler.do_step(coord, speed)
         
+# Robot plays the audio received from the client, only happens when directors speaker is on
 def handle_audio(conn):
     while True:
         data = conn.recv(4096)
@@ -373,22 +355,14 @@ def handle_audio(conn):
 #endregion ######### Crawler Movement #########
 
 #region ######### Socket Programming / Start running the server #########
-def get_local_ip():
-   """Get local IP address"""
-   try:
-      s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-      s.connect(("8.8.8.8", 80))
-      return s.getsockname()[0]
-   except:
-      return "Unknown"
    
 def start_server():
+   """ Start the server and listen for incoming connections. """
    # Audio socket
    aud_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
    aud_sock.bind((HOST, AUD_PORT))
    aud_sock.listen(1)
    
-   """ Start the server and listen for incoming connections. """
    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
    server_socket.bind((HOST, PORT))
    server_socket.listen(5)
@@ -402,6 +376,7 @@ def start_server():
             client_socket, client_address = server_socket.accept()
             aud_conn, _ = aud_sock.accept()
             
+            # If connections are successful, create threads for handling robot and aud data
             threading.Thread(target=handle_client, args=(client_socket, client_address)).start()
             threading.Thread(target=handle_audio, args=(aud_conn,), daemon=True).start()
          except Exception as e:
@@ -411,16 +386,16 @@ def start_server():
          crawler.do_step(current_pose, speed) # Attempt not avoid the robot to stay relaxed
                
 
-
+# Handle incoming client data
 def handle_client(client_socket, client_address):
    """ Handle incoming client requests. """
    print(f"Connection from {client_address}")
+   global speed 
+   speed = 90 # Reset speed to 90
    
    try:
       while True:
          # Receive data from the client
-         # request_data = client_socket.recv(1024).decode("utf-8", errors="replace")
-         # request_data = client_socket.recv(1024)
          request_data = client_socket.recv(CHUNK)
          if not request_data:  # Client has closed the connection
             break
@@ -444,16 +419,19 @@ def process_request(data, client_socket, client_address):
    """ Process the client's request and generate a response. """
    global speed
    current_pose = crawler.current_step_all_leg_value()
-   
+   # Decode the request data
    request_data = data.decode("utf-8", errors="replace")
    if not request_data or request_data == "":
       client_socket.sendall("".encode("utf-8"))
       print(f"the request data is empty")
       return
    
+   # Add \n at the end
+   """Some data will have multiple \n to process all data in that one line, while other data only need one for real-time accuracy"""
    if "\n" not in request_data:
       request_data = request_data + "\n"
    
+   # Process all the data by each \n in the line
    while "\n" in request_data:
       message, request_data = request_data.split("\n", 1)
       print("process request", message)
@@ -464,7 +442,9 @@ def process_request(data, client_socket, client_address):
       # parse the message
       message = message.split(':')
 
+      # If header has move, robot will react based on the direction command
       if message[0] == "move":
+         # print("Move activated") # Debug print
          if 'left' == message[1]: # move sideway left
             move_sideLeft(speed, current_pose)
          elif 'rotate left' == message[1]: # rotate left
@@ -481,22 +461,18 @@ def process_request(data, client_socket, client_address):
             moveUp(speed, current_pose)
          elif 'down' == message[1]: # move backward
             moveDown(speed, current_pose)
-         elif 'stand' == message[1]: # stand position
+         elif 'stand' == message[1]: # move to a stand position
             crawler.do_step('stand', speed)
-         elif '+' == message[1]: # increase speed
+         elif '+' == message[1]: # increase robot speed by 5
             speed+=5
             print(speed)
-         elif '-' == message[1]: # decrease
+         elif '-' == message[1]: # decrease robot speed by 5
             speed-=5
             print(speed)
          else: return # Do nothing
          
-      elif message[0] == "autofocus":
-         print("autofocus On")
-         manual_autofocus(message[1])
-         
       elif message[0] == "zoom": # Set the function of the camera based on the value
-         print("Zoom On") # Debug print
+         # print("Zoom On") # Debug print
          zoom(message[1], message[2])
    
 
@@ -505,6 +481,6 @@ if __name__ == '__main__':
     start_server()
     
 # after main close stop all audio processes
-# stream.stop_stream()
-# stream.close()
-# p.terminate()
+stream.stop_stream()
+stream.close()
+p.terminate()
