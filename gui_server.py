@@ -382,6 +382,14 @@ def start_server():
          except Exception as e:
             print(f"Error accepting connections: {e}")
             
+         except KeyboardInterrupt:
+            print("\nShutting down server...")
+
+         finally:
+            print("Closing sockets...")
+            server_socket.close()
+            aud_sock.close()
+            
          current_pose = crawler.current_step_all_leg_value()
          crawler.do_step(current_pose, speed) # Attempt not avoid the robot to stay relaxed
                
