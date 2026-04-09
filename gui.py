@@ -1434,38 +1434,47 @@ class MovieDirectorGUI(ctk.CTk):
         mid_point_shoulder = abs((1-(1/2))*left_sx + (1/2)*right_sx)
         mid_point_hip = abs((1-(1/2))*left_hx + (1/2)*right_hx)
         
+        mid_point_shoulder = (left_sx + right_sx) / 2
+        mid_point_hip = (left_hx + right_hx) / 2
+        mid = (mid_point_shoulder + mid_point_hip) / 2
+
+        left_third = w / 3
+        right_third = 2 * w / 3
+        threshold = w * 0.05   # 5% tolerance
+
+        # STOP condition
+        if abs(mid - left_third) < threshold or abs(mid - right_third) < threshold:
+            print("Reached rule-of-thirds position → STOP")
+            self.ruleofthirds = False
+            return
+        
+        
         # Move left if atleast 3 points of the torso is at w/5 * 2 at the left of the screen
         if sum(1 for x in list if x < (w/5) * 2) > 2:
-            # Checks which torso is closer to one of the rule of thirds line (w/3)
-            check_leftLine = max(0, min(100, (mid_point_shoulder * 3 / (1 * w)) * 100)) 
-            check_rightLine = max(0, min(100, (mid_point_hip * 3 / (1 * w)) * 100)) 
-            print("move:left", check_leftLine, check_rightLine)
-            self.sendMessage("move:left")
-            # while check_leftLine < 100 and check_rightLine < 100:
-            #     print(check_leftLine, check_rightLine)
-            #     self.sendMessage(f"move:left")
+            if self.last_direction == "left" or self.last_direction == None:
+                # Checks which torso is closer to one of the rule of thirds line (w/3)
+                check_leftLine = max(0, min(100, (mid_point_shoulder * 3 / (1 * w)) * 100)) 
+                check_rightLine = max(0, min(100, (mid_point_hip * 3 / (1 * w)) * 100)) 
+                print("move:left", check_leftLine, check_rightLine)
+                self.last_direction = "left"
+                self.sendMessage("move:left")
                 
         elif sum(1 for x in list if x > (w/5) * 3) > 2:
-            # Checks which torso is closer to one of the rule of thirds line (w/3)
-            check_leftLine = max(0, min(100, ((w - mid_point_shoulder) / (1 * w / 3)) * 100))
-            check_rightLine = max(0, min(100, ((w - mid_point_hip) / (1 * w / 3)) * 100))
-            print("move:right",check_leftLine, check_rightLine)
-            self.sendMessage("move:right")
-            # while check_leftLine < 100 and check_rightLine < 100:
-            #     print(check_leftLine, check_rightLine)
-            #     self.sendMessage(f"move:right")
+            if self.last_direction == "right" or self.last_direction == None:
+                # Checks which torso is closer to one of the rule of thirds line (w/3)
+                check_leftLine = max(0, min(100, ((w - mid_point_shoulder) / (1 * w / 3)) * 100))
+                check_rightLine = max(0, min(100, ((w - mid_point_hip) / (1 * w / 3)) * 100))
+                print("move:right",check_leftLine, check_rightLine)
+                self.sendMessage("move:right")
             
         elif sum(1 for x in list if x > (w/5) * 2 and x < (w/5) * 3) >= 2:
             print("subject on middle")
-            if abs(mid_point_shoulder - (w/3)) < abs(mid_point_shoulder - (w/3) * 2):
+            if abs(mid_point_shoulder - (w/3)) < abs(mid_point_shoulder - (w/3) * 2) and (self.last_direction == "left" or self.last_direction == None):
                 print("go left")
                 self.sendMessage("move:left")
-                # while 
             else:
                 print("go right!")
                 self.sendMessage("move:right")
-                
-        self.ruleofthirds = False
         
         
     # Calculate the center of attention based on the subject
@@ -1487,18 +1496,16 @@ class MovieDirectorGUI(ctk.CTk):
             
             if percentage_rightShoulder < 70:
                 self.sendMessage(f"move:left")
-                # time.sleep(1)
                 print(f"move:left")
             elif percentage_leftShoulder < 70:
                 self.sendMessage(f"move:right")
-                # time.sleep(1)
                 print(f"move:right")
-            
-            # self.symmetry = False
+            else:
+                self.symmetry = False
+                print("Reached center subject position → STOP")
                 
-            # time.sleep(2)
                 
-
+    # Repeat action for the dolly zoom requires all commands in one line, seperated by \n
     def repeat_action(self, count, move_cmd, zoom_step):
         def step(i):
             if i >= count:
@@ -1616,15 +1623,17 @@ class MovieDirectorGUI(ctk.CTk):
             
         # Adjust position by rule of thirds
         elif idx == 3: # If rule of thirds is clicked
-            self.ruleofthirds = not self.ruleofthirds
             was_on = self.showRuleofThirds
             print(was_on)
             self._close_all_composition_overlays()
             print(was_on)
             if not was_on:
                 self.showRuleofThirds = True
+                self.ruleofthirds = not self.ruleofthirds
                 button.configure(fg_color="green", hover_color = "#21451E")
-                self.after(3000, lambda:button.configure(fg_color=("#3B8ED0", "#1F6AA5")))
+                # self.after(3000, lambda:button.configure(fg_color=("#3B8ED0", "#1F6AA5")))
+            else:
+                button.configure(fg_color=("#3B8ED0", "#1F6AA5"))
             print(f"Rule of thirds overlay: {'on' if self.showRuleofThirds else 'off'}")
                 
         # Adjust position by Center of attention

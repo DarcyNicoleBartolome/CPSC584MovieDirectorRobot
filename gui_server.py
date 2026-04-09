@@ -357,51 +357,51 @@ def handle_audio(conn):
 #region ######### Socket Programming / Start running the server #########
    
 def start_server():
-    """ Start the server and listen for incoming connections. """
-    aud_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+   """ Start the server and listen for incoming connections. """
+   aud_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+   server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    try:
-        aud_sock.bind((HOST, AUD_PORT))
-        aud_sock.listen(1)
+   try:
+      aud_sock.bind((HOST, AUD_PORT))
+      aud_sock.listen(1)
 
-        server_socket.bind((HOST, PORT))
-        server_socket.listen(5)
+      server_socket.bind((HOST, PORT))
+      server_socket.listen(5)
 
-        print(f"Server started and listening on {HOST}:{PORT}")
+      print(f"Server started and listening on {HOST}:{PORT}")
 
-        threading.Thread(target=VideoStream, daemon=True).start()
+      threading.Thread(target=VideoStream, daemon=True).start()
 
-        while True:
-            try:
-                client_socket, client_address = server_socket.accept()
-                aud_conn, _ = aud_sock.accept()
+      while True:
+         try:
+               client_socket, client_address = server_socket.accept()
+               aud_conn, _ = aud_sock.accept()
 
-                threading.Thread(
-                    target=handle_client,
-                    args=(client_socket, client_address),
-                    daemon=True
-                ).start()
+               threading.Thread(
+                  target=handle_client,
+                  args=(client_socket, client_address),
+                  daemon=True
+               ).start()
 
-                threading.Thread(
-                    target=handle_audio,
-                    args=(aud_conn,),
-                    daemon=True
-                ).start()
+               threading.Thread(
+                  target=handle_audio,
+                  args=(aud_conn,),
+                  daemon=True
+               ).start()
 
-            except Exception as e:
-                print(f"Error accepting connections: {e}")
+         except Exception as e:
+               print(f"Error accepting connections: {e}")
 
-            current_pose = crawler.current_step_all_leg_value()
-            crawler.do_step(current_pose, speed)
+         current_pose = crawler.current_step_all_leg_value()
+         crawler.do_step(current_pose, speed)
 
-    except KeyboardInterrupt:
-        print("\nShutting down server...")
+   except KeyboardInterrupt:
+      print("\nShutting down server...")
 
-    finally:
-        print("Closing sockets...")
-        server_socket.close()
-        aud_sock.close()
+   finally:
+      print("Closing sockets...")
+      server_socket.close()
+      aud_sock.close()
 
 # Handle incoming client data
 def handle_client(client_socket, client_address):
@@ -409,8 +409,6 @@ def handle_client(client_socket, client_address):
    print(f"Connection from {client_address}")
    global speed 
    speed = 90 # Reset speed to 90
-   # setup = [[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT],[Y_DEFAULT, X_DEFAULT, Z_DEFAULT]]
-   # crawler.do_step(setup, speed)
    crawler.do_step("stand", speed)
    
    try:
